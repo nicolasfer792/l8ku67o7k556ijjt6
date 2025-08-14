@@ -21,7 +21,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="clean-card p-6 animate-fade-in">
+      <div className="clean-card p-4 sm:p-6 animate-fade-in">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center space-x-3 animate-slide-in-left">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white font-bold text-lg overflow-hidden">
@@ -32,15 +32,15 @@ export function Dashboard() {
               />
             </div>
             <div>
-              <h1 className="text-2xl font-heading text-slate-900">Atila Salón</h1>
-              <p className="text-slate-600 font-body">Gestión de eventos</p>
+              <h1 className="text-xl sm:text-2xl font-heading text-slate-900">Atila Salón</h1>
+              <p className="text-slate-600 font-body text-sm sm:text-base">Gestión de eventos</p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 animate-slide-in-right">
             <DateSearch />
             <div className="status-indicator">
               <div className="status-dot animate-pulse-dot"></div>
-              <span>Sistema Activo</span>
+              <span className="text-sm sm:text-base">Sistema Activo</span>
             </div>
           </div>
         </div>

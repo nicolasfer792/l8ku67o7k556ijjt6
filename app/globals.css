@@ -358,6 +358,28 @@
     @apply w-2 h-2 rounded-full bg-green-500;
   }
 
+  /* Date search component styles */
+  @media (max-width: 640px) {
+    .date-search-form {
+      width: 100%;
+    }
+    
+    .date-search-input {
+      min-width: 120px !important;
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Status indicator styles for mobile */
+  @media (max-width: 640px) {
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+    }
+  }
+
   /* Login page specific styles */
   .login-container {
     position: fixed;
