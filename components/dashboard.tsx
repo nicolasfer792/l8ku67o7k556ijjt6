@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ExpensesAndStats } from "./expenses-and-stats"
 import { ConfigForm } from "./config-form"
 import { TrashBin } from "./trash-bin"
+import { DateSearch } from "./date-search"
 import { Calendar, Trash2, Settings, BarChart3 } from "lucide-react"
 import { useAtila } from "@/store/atila-provider"
 import type { Reservation } from "@/lib/types"
@@ -36,6 +37,7 @@ export function Dashboard() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 animate-slide-in-right">
+            <DateSearch />
             <div className="status-indicator">
               <div className="status-dot animate-pulse-dot"></div>
               <span>Sistema Activo</span>
