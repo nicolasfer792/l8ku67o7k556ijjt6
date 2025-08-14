@@ -30,7 +30,7 @@ export function DateSearch() {
             type="date"
             value={searchDate}
             onChange={(e) => setSearchDate(e.target.value)}
-            className="pl-8 pr-4 py-1 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-sm w-full"
+            className="pl-8 pr-10 py-1 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-sm w-full"
           />
           <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
