@@ -152,11 +152,11 @@ export function ReservationCalendar(
                       tabIndex={0}
                     >
                       <div className="text-[10px] sm:text-xs font-medium">{date.getDate()}</div>
+                      {hasMigrated && (
+                        <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" title="Reserva migrada" />
+                      )}
                       <div className="mt-auto flex items-center gap-1">
                         <span className="text-[10px] sm:text-xs capitalize">{st}</span>
-                        {hasMigrated && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" title="Reserva migrada" />
-                        )}
                       </div>
                     </button>
                   )
