@@ -28,6 +28,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
   const [extrasSel, setExtrasSel] = React.useState<string[]>([])
   const [cantidades, setCantidades] = React.useState<Record<string, number>>({})
   const [notas, setNotas] = React.useState("") // Nuevo estado para notas
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   React.useEffect(() => {
     setFecha(defaultDate || "")
@@ -52,6 +53,8 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
       toast({ title: "Error", description: "Nombre y fecha son obligatorios.", variant: "destructive" })
       return
     }
+    
+    setIsSubmitting(true);
     try {
       const nuevo = await addReserva({
         nombreCliente: nombre,
@@ -77,18 +80,20 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
         description: error.message || "Ocurrió un error desconocido.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full animate-fade-in">
       <CardHeader>
-        <CardTitle>Nueva reserva</CardTitle>
+        <CardTitle className="animate-slide-in-left">Nueva reserva</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
+            <div className="animate-staggered-fade-in">
               <Label htmlFor="nombre">Nombre</Label>
               <Input
                 id="nombre"
@@ -96,13 +101,14 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Nombre del cliente"
                 required
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-100">
               <Label htmlFor="fecha">Fecha</Label>
-              <Input id="fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+              <Input id="fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-200">
               <Label htmlFor="personas">Cantidad de personas</Label>
               <Input
                 id="personas"
@@ -110,9 +116,10 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                 min={0}
                 value={personas}
                 onChange={(e) => setPersonas(Number(e.target.value))}
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-300">
               <Label>Estado</Label>
               <Select value={estado} onValueChange={(v: DayStatus) => setEstado(v)}>
                 <SelectTrigger>
@@ -127,23 +134,24 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 animate-staggered-fade-in delay-400">
             <Label htmlFor="notas">Notas / Tipo de evento</Label>
             <Textarea
               id="notas"
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               placeholder="Ej: Cumpleaños de 15, Boda, Evento corporativo..."
+              className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 animate-staggered-fade-in delay-500">
             <Label>Servicios extras (precio fijo)</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {state.config.extrasFijos.map((ex) => {
                 const checked = extrasSel.includes(ex.id)
                 return (
-                  <label key={ex.id} className="flex items-center gap-2 rounded-md border p-2">
+                  <label key={ex.id} className="flex items-center gap-2 rounded-md border p-2 hover-lift transition-all duration-200 hover:shadow-sm">
                     <Checkbox
                       checked={checked}
                       onCheckedChange={(v) => {
@@ -158,15 +166,15 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 animate-staggered-fade-in delay-600">
             <Label>Ítems por cantidad</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {state.config.itemsPorCantidad.map((it) => (
-                <div key={it.id} className="rounded-md border p-2">
+                <div key={it.id} className="rounded-md border p-2 hover-lift transition-all duration-200 hover:shadow-sm">
                   <div className="text-sm font-medium">{it.nombre}</div>
                   <div className="text-xs text-muted-foreground">x {it.precioUnitario.toLocaleString("es-AR")} c/u</div>
                   <Input
-                    className="mt-2"
+                    className="mt-2 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
                     type="number"
                     min={0}
                     value={cantidades[it.id] || 0}
@@ -177,10 +185,23 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
             </div>
           </div>
 
-          <PriceBreakdown breakdown={calc.breakdown} total={calc.total} />
+          <PriceBreakdown breakdown={calc.breakdown} total={calc.total} className="animate-staggered-fade-in delay-700" />
 
-          <div className="flex justify-end">
-            <Button type="submit">Crear reserva</Button>
+          <div className="flex justify-end animate-staggered-fade-in delay-800">
+            <Button
+              type="submit"
+              className="transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 animate-pulse-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  Creando...
+                </>
+              ) : (
+                "Crear reserva"
+              )}
+            </Button>
           </div>
         </form>
       </CardContent>

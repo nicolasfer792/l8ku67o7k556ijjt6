@@ -149,16 +149,16 @@ export function ExportMonthlyPDF() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-end">
-        <div className="w-full sm:w-auto">
+        <div className="w-full sm:w-auto animate-staggered-fade-in">
           <label className="block text-sm mb-1 font-medium">Mes a exportar</label>
-          <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-full sm:w-auto" />
+          <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-full sm:w-auto transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
         </div>
-        <Button onClick={exportPdf} disabled={loading} className="w-full sm:w-auto" size="default">
+        <Button onClick={exportPdf} disabled={loading} className="w-full sm:w-auto hover-lift transition-all duration-200 hover:shadow-md" size="default">
           {loading ? (
             <>
-              <FileText className="mr-2 h-4 w-4 animate-pulse" />
+              <FileText className="mr-2 h-4 w-4 animate-spin" />
               Generando...
             </>
           ) : (
@@ -170,13 +170,13 @@ export function ExportMonthlyPDF() {
         </Button>
       </div>
 
-      <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
+      <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md animate-staggered-fade-in delay-200">
         <p className="font-medium mb-1">Información del reporte:</p>
         <ul className="space-y-1">
-          <li>• Incluye todas las reservas activas del mes seleccionado</li>
-          <li>• Contiene resumen estadístico y desglose por estado</li>
-          <li>• Compatible con dispositivos móviles y de escritorio</li>
-          <li>• El archivo se guardará en tu carpeta de descargas</li>
+          <li className="animate-staggered-fade-in delay-300">• Incluye todas las reservas activas del mes seleccionado</li>
+          <li className="animate-staggered-fade-in delay-400">• Contiene resumen estadístico y desglose por estado</li>
+          <li className="animate-staggered-fade-in delay-500">• Compatible con dispositivos móviles y de escritorio</li>
+          <li className="animate-staggered-fade-in delay-600">• El archivo se guardará en tu carpeta de descargas</li>
         </ul>
       </div>
     </div>

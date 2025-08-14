@@ -9,19 +9,21 @@ type Props = {
     limpieza: number
   }
   total: number
+  className?: string
 }
 
 export function PriceBreakdown(
-  { breakdown, total }: Props = {
+  { breakdown, total, className }: Props = {
     breakdown: { base: 0, perPerson: 0, extrasFijosTotal: 0, cantidadesTotal: 0, limpieza: 0 },
     total: 0,
+    className: "",
   },
 ) {
   // Calcula las ganancias
   const ganancias = total - breakdown.limpieza
 
   return (
-    <div className="rounded-md border p-3 text-sm space-y-1">
+    <div className={`rounded-md border p-3 text-sm space-y-1 ${className}`}>
       <div className="flex justify-between">
         <span>Base:</span>
         <span>{formatCurrency(breakdown.base)}</span>

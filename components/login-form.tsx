@@ -59,8 +59,12 @@ export default function LoginForm() {
       <div className="glass-card rounded-2xl p-8 space-y-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-600 text-white font-bold text-2xl shadow-lg">
-              A
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-600 text-white font-bold text-2xl shadow-lg overflow-hidden">
+              <img
+                src="/Atila.jpg"
+                alt="Atila Salón Logo"
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
           <div>

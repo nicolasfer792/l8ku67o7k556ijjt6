@@ -85,40 +85,40 @@ export function ExpensesAndStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <Card className="w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in">
+      <Card className="w-full hover-lift">
         <CardHeader>
-          <CardTitle>Gastos extras</CardTitle>
+          <CardTitle className="animate-slide-in-left">Gastos extras</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <form onSubmit={add} className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 animate-staggered-fade-in">
               <Label>Nombre</Label>
-              <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Compra o gasto" />
+              <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Compra o gasto" className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-100">
               <Label>Monto</Label>
-              <Input type="number" value={monto} onChange={(e) => setMonto(Number(e.target.value))} />
+              <Input type="number" value={monto} onChange={(e) => setMonto(Number(e.target.value))} className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-200">
               <Label>Fecha</Label>
-              <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+              <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
             </div>
-            <div className="sm:col-span-4 flex justify-end">
-              <Button type="submit">Agregar gasto</Button>
+            <div className="sm:col-span-4 flex justify-end animate-staggered-fade-in delay-300">
+              <Button type="submit" className="hover-lift transition-all duration-200 hover:shadow-md">Agregar gasto</Button>
             </div>
           </form>
 
           <div className="space-y-2">
-            {state.gastos.length === 0 && <div className="text-sm text-muted-foreground">Sin gastos registrados.</div>}
-            {state.gastos.map((g) => (
-              <div key={g.id} className="flex items-center gap-2 border rounded-md p-2">
+            {state.gastos.length === 0 && <div className="text-sm text-muted-foreground animate-fade-in">Sin gastos registrados.</div>}
+            {state.gastos.map((g, index) => (
+              <div key={g.id} className="flex items-center gap-2 border rounded-md p-2 hover-lift transition-all duration-200 hover:shadow-sm animate-staggered-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
                 <div className="flex-1">
                   <div className="font-medium">{g.nombre}</div>
                   <div className="text-xs text-muted-foreground">{g.fecha}</div>
                 </div>
                 <div className="text-sm font-semibold">{formatCurrency(g.monto)}</div>
-                <Button variant="ghost" size="icon" onClick={() => eliminarGasto(g.id)}>
+                <Button variant="ghost" size="icon" onClick={() => eliminarGasto(g.id)} className="transition-all duration-200 hover:scale-110 hover:bg-destructive hover:text-destructive-foreground">
                   <Trash2 className="size-4" />
                 </Button>
               </div>
@@ -127,23 +127,23 @@ export function ExpensesAndStats() {
         </CardContent>
       </Card>
 
-      <Card className="w-full">
+      <Card className="w-full hover-lift">
         <CardHeader>
-          <CardTitle>Estadísticas financieras</CardTitle>
+          <CardTitle className="animate-slide-in-right">Estadísticas financieras</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2 text-sm">
-            <Button variant={periodo === "semana" ? "default" : "outline"} onClick={() => setPeriodo("semana")}>
+          <div className="flex gap-2 text-sm animate-staggered-fade-in delay-400">
+            <Button variant={periodo === "semana" ? "default" : "outline"} onClick={() => setPeriodo("semana")} className="transition-all duration-200 hover:scale-105">
               Semanal
             </Button>
-            <Button variant={periodo === "mes" ? "default" : "outline"} onClick={() => setPeriodo("mes")}>
+            <Button variant={periodo === "mes" ? "default" : "outline"} onClick={() => setPeriodo("mes")} className="transition-all duration-200 hover:scale-105">
               Mensual
             </Button>
-            <Button variant={periodo === "anio" ? "default" : "outline"} onClick={() => setPeriodo("anio")}>
+            <Button variant={periodo === "anio" ? "default" : "outline"} onClick={() => setPeriodo("anio")} className="transition-all duration-200 hover:scale-105">
               Anual
             </Button>
           </div>
-          <div className="h-64">
+          <div className="h-64 animate-staggered-fade-in delay-500">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -158,7 +158,7 @@ export function ExpensesAndStats() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="h-64">
+          <div className="h-64 animate-staggered-fade-in delay-600">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" />

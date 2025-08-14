@@ -73,27 +73,28 @@ export function TrashBin() {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full hover-lift">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base sm:text-lg">Papelera de Reservas</CardTitle>
+        <CardTitle className="text-base sm:text-lg animate-slide-in-left">Papelera de Reservas</CardTitle>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchTrashed} disabled={loading}>
+          <Button variant="outline" onClick={fetchTrashed} disabled={loading} className="transition-all duration-200 hover:scale-105">
             <RefreshCcw className="mr-2 h-4 w-4" /> Refrescar
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        {loading && <div className="text-sm text-muted-foreground">Cargando papelera...</div>}
+        {loading && <div className="text-sm text-muted-foreground animate-fade-in">Cargando papelera...</div>}
         {!loading && trashedReservations.length === 0 && (
-          <div className="text-sm text-muted-foreground">La papelera está vacía.</div>
+          <div className="text-sm text-muted-foreground animate-fade-in">La papelera está vacía.</div>
         )}
         {!loading &&
-          trashedReservations.map((r) => {
-            const daysRemaining = calculateDaysRemaining(r.deletedAt)
+          trashedReservations.map((r, index) => {
+            const daysRemaining = calculateDaysRemaining(r.deletedAt || null)
             return (
               <div
                 key={r.id}
-                className="flex flex-col sm:flex-row gap-2 sm:items-center border rounded-md p-2 bg-gray-50"
+                className="flex flex-col sm:flex-row gap-2 sm:items-center border rounded-md p-2 bg-gray-50 hover-lift transition-all duration-200 hover:shadow-sm animate-staggered-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex-1">
                   <div className="font-medium">{r.nombreCliente}</div>
@@ -108,12 +109,12 @@ export function TrashBin() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => handleRecover(r.id)}>
+                  <Button variant="outline" size="sm" onClick={() => handleRecover(r.id)} className="transition-all duration-200 hover:scale-105">
                     Recuperar
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
+                      <Button variant="destructive" size="sm" className="transition-all duration-200 hover:scale-105">
                         <Trash2 className="mr-2 h-4 w-4" /> Borrar
                       </Button>
                     </AlertDialogTrigger>

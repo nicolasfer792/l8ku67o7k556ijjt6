@@ -10,26 +10,36 @@ import { ExpensesAndStats } from "./expenses-and-stats"
 import { ConfigForm } from "./config-form"
 import { TrashBin } from "./trash-bin"
 import { Calendar, Trash2, Settings, BarChart3 } from "lucide-react"
+import { useAtila } from "@/store/atila-provider"
+import type { Reservation } from "@/lib/types"
 
 export function Dashboard() {
   const [selectedDate, setSelectedDate] = React.useState<string>("")
+  
+  const { state } = useAtila()
 
   return (
     <div className="space-y-6">
-      <div className="clean-card p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white font-bold text-lg">
-              A
+      <div className="clean-card p-6 animate-fade-in">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center space-x-3 animate-slide-in-left">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white font-bold text-lg overflow-hidden">
+              <img
+                src="/Atila.jpg"
+                alt="Atila Salón Logo"
+                className="h-full w-full object-cover"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-heading text-slate-900">Atila Salón</h1>
               <p className="text-slate-600 font-body">Gestión de eventos</p>
             </div>
           </div>
-          <div className="status-indicator">
-            <div className="status-dot"></div>
-            <span>Sistema Activo</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 animate-slide-in-right">
+            <div className="status-indicator">
+              <div className="status-dot animate-pulse-dot"></div>
+              <span>Sistema Activo</span>
+            </div>
           </div>
         </div>
       </div>

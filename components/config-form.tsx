@@ -142,21 +142,21 @@ export function ConfigForm() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="w-full">
+    <div className="space-y-6 animate-fade-in">
+      <Card className="w-full hover-lift">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-teal-700">
+          <CardTitle className="flex items-center space-x-2 text-teal-700 animate-slide-in-left">
             <Database className="h-5 w-5" />
             <span>Migración de datos</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 animate-staggered-fade-in">
             Sube tus archivos Excel de balances anteriores para importar datos históricos de reservas y finanzas.
           </p>
 
           <div
-            className="upload-area p-8 text-center cursor-pointer"
+            className="upload-area p-8 text-center cursor-pointer animate-staggered-fade-in delay-100"
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -230,61 +230,66 @@ export function ConfigForm() {
         </CardContent>
       </Card>
 
-      <Card className="w-full">
+      <Card className="w-full hover-lift">
         <CardHeader>
-          <CardTitle className="text-teal-700">Configuración de precios y gastos</CardTitle>
+          <CardTitle className="text-teal-700 animate-slide-in-right">Configuración de precios y gastos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
+            <div className="animate-staggered-fade-in">
               <Label>Base (entre semana)</Label>
               <Input
                 type="number"
                 value={cfg.baseEntreSemana}
                 onChange={(e) => updateNumber("baseEntreSemana", Number(e.target.value))}
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-100">
               <Label>Base (fin de semana)</Label>
               <Input
                 type="number"
                 value={cfg.baseFinDeSemana}
                 onChange={(e) => updateNumber("baseFinDeSemana", Number(e.target.value))}
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-200">
               <Label>Precio por persona (entre semana)</Label>
               <Input
                 type="number"
                 value={cfg.precioPorPersonaEntreSemana}
                 onChange={(e) => updateNumber("precioPorPersonaEntreSemana", Number(e.target.value))}
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-300">
               <Label>Precio por persona (fin de semana)</Label>
               <Input
                 type="number"
                 value={cfg.precioPorPersonaFinDeSemana}
                 onChange={(e) => updateNumber("precioPorPersonaFinDeSemana", Number(e.target.value))}
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div>
+            <div className="animate-staggered-fade-in delay-400">
               <Label>Costo fijo de limpieza</Label>
               <Input
                 type="number"
                 value={cfg.costoLimpiezaFijo}
                 onChange={(e) => updateNumber("costoLimpiezaFijo", Number(e.target.value))}
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 animate-staggered-fade-in delay-500">
             <div className="font-medium">Extras fijos</div>
             <div className="space-y-2">
               {cfg.extrasFijos.map((ex, idx) => (
-                <div key={ex.id} className="grid grid-cols-5 gap-2">
+                <div key={ex.id} className="grid grid-cols-5 gap-2 hover-lift transition-all duration-200 hover:shadow-sm">
                   <Input
-                    className="col-span-2"
+                    className="col-span-2 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
                     value={ex.nombre}
                     onChange={(e) => {
                       const v = e.target.value
@@ -297,7 +302,7 @@ export function ConfigForm() {
                   />
                   <Input
                     type="number"
-                    className="col-span-2"
+                    className="col-span-2 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
                     value={ex.precio}
                     onChange={(e) => {
                       const v = Number(e.target.value)
@@ -313,6 +318,7 @@ export function ConfigForm() {
                     onClick={() => {
                       setCfg((s) => ({ ...s, extrasFijos: s.extrasFijos.filter((_, i) => i !== idx) }))
                     }}
+                    className="transition-all duration-200 hover:scale-105 hover:bg-destructive hover:text-destructive-foreground"
                   >
                     Eliminar
                   </Button>
@@ -326,19 +332,20 @@ export function ConfigForm() {
                     extrasFijos: [...s.extrasFijos, { id: crypto.randomUUID(), nombre: "Nuevo extra", precio: 0 }],
                   }))
                 }}
+                className="transition-all duration-200 hover:scale-105 hover-lift"
               >
                 Agregar extra
               </Button>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 animate-staggered-fade-in delay-600">
             <div className="font-medium">Ítems por cantidad</div>
             <div className="space-y-2">
               {cfg.itemsPorCantidad.map((it, idx) => (
-                <div key={it.id} className="grid grid-cols-5 gap-2">
+                <div key={it.id} className="grid grid-cols-5 gap-2 hover-lift transition-all duration-200 hover:shadow-sm">
                   <Input
-                    className="col-span-2"
+                    className="col-span-2 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
                     value={it.nombre}
                     onChange={(e) => {
                       const v = e.target.value
@@ -351,7 +358,7 @@ export function ConfigForm() {
                   />
                   <Input
                     type="number"
-                    className="col-span-2"
+                    className="col-span-2 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
                     value={it.precioUnitario}
                     onChange={(e) => {
                       const v = Number(e.target.value)
@@ -367,6 +374,7 @@ export function ConfigForm() {
                     onClick={() => {
                       setCfg((s) => ({ ...s, itemsPorCantidad: s.itemsPorCantidad.filter((_, i) => i !== idx) }))
                     }}
+                    className="transition-all duration-200 hover:scale-105 hover:bg-destructive hover:text-destructive-foreground"
                   >
                     Eliminar
                   </Button>
@@ -383,14 +391,15 @@ export function ConfigForm() {
                     ],
                   }))
                 }}
+                className="transition-all duration-200 hover:scale-105 hover-lift"
               >
                 Agregar ítem
               </Button>
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button onClick={() => guardarConfig(cfg)} className="modern-button">
+          <div className="flex justify-end animate-staggered-fade-in delay-700">
+            <Button onClick={() => guardarConfig(cfg)} className="modern-button hover-lift transition-all duration-200 hover:shadow-md">
               Guardar cambios
             </Button>
           </div>
