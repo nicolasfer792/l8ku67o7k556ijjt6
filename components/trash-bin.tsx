@@ -77,9 +77,6 @@ export function TrashBin() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base sm:text-lg">Papelera de Reservas</CardTitle>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handlePurgeOld} disabled={loading}>
-            Limpiar antiguas
-          </Button>
           <Button variant="outline" onClick={fetchTrashed} disabled={loading}>
             <RefreshCcw className="mr-2 h-4 w-4" /> Refrescar
           </Button>
