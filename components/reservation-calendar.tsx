@@ -155,8 +155,8 @@ export function ReservationCalendar(
                       {hasMigrated && (
                         <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" title="Reserva migrada" />
                       )}
-                      <div className="mt-auto flex items-center gap-1">
-                        <span className="text-[10px] sm:text-xs capitalize">{st}</span>
+                      <div className="mt-auto flex items-center gap-1 overflow-hidden">
+                        <span className="text-[10px] sm:text-xs capitalize truncate">{st}</span>
                       </div>
                     </button>
                   )
