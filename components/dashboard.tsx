@@ -4,7 +4,7 @@ import React from "react"
 import { ReservationCalendar } from "./reservation-calendar"
 import { NewReservationForm } from "./new-reservation-form"
 import { ReservationsList } from "./reservations-list"
-import { ExportMonthlyPDF } from "./export-monthly-pdf"
+import { ExportMonthlyExcel } from "./export-monthly-excel"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ExpensesAndStats } from "./expenses-and-stats"
 import { ConfigForm } from "./config-form"
@@ -75,7 +75,7 @@ export function Dashboard() {
                 <ReservationCalendar onSelectDate={setSelectedDate} />
               </div>
               <div className="clean-card p-6">
-                <ExportMonthlyPDF />
+                <ExportMonthlyExcel />
               </div>
               <div className="clean-card p-6">
                 <ReservationsList />
