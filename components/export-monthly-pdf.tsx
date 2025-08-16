@@ -56,18 +56,42 @@ export function ExportMonthlyPDF() {
       doc.text(subtitle, 14, 24)
       doc.text(`Generado: ${new Date().toLocaleDateString("es-ES")}`, 14, 30)
 
-      const rows = data.map((r) => [
-        new Date(r.fecha + "T00:00:00").toLocaleDateString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-        }),
-        r.nombreCliente,
-        r.estado.toUpperCase(),
-        String(r.cantidadPersonas),
-        r.esFinDeSemana ? "Fin de semana" : "Entre semana",
-        formatCurrency(r.total),
-        r.notas ? r.notas.substring(0, 20) + (r.notas.length > 20 ? "..." : "") : "-",
-      ])
+      const rows = data.map((r) => {
+        const { config } = state
+
+        const extrasFijosDetails = r.extrasFijosSeleccionados
+          .map((id) => {
+            const extra = config.extrasFijos.find((e) => e.id === id)
+            return extra ? extra.nombre : id
+          })
+          .join(", ")
+
+        const cantidadesDetails = Object.entries(r.cantidades)
+          .map(([id, cantidad]) => {
+            if (cantidad > 0) {
+              const item = config.itemsPorCantidad.find((i) => i.id === id)
+              return item ? `${cantidad}x ${item.nombre}` : `${cantidad}x ${id}`
+            }
+            return null
+          })
+          .filter(Boolean)
+          .join(", ")
+
+        const details = [extrasFijosDetails, cantidadesDetails].filter(Boolean).join(" | ")
+
+        return [
+          new Date(r.fecha + "T00:00:00").toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+          }),
+          r.nombreCliente,
+          r.estado.toUpperCase(),
+          String(r.cantidadPersonas),
+          formatCurrency(r.total),
+          details || "-",
+          r.notas ? r.notas.substring(0, 20) + (r.notas.length > 20 ? "..." : "") : "-",
+        ]
+      })
 
       const total = data.reduce((acc, r) => acc + r.total, 0)
       const totalReservations = data.length
@@ -76,20 +100,20 @@ export function ExportMonthlyPDF() {
         data.length > 0 ? Math.round(data.reduce((acc, r) => acc + r.cantidadPersonas, 0) / data.length) : 0
 
       autoTable(doc, {
-        head: [["Fecha", "Cliente", "Estado", "Personas", "Tipo", "Total", "Notas"]],
+        head: [["Fecha", "Cliente", "Estado", "Personas", "Total", "Extras y Items", "Notas"]],
         body: rows,
         startY: 38,
         theme: "grid",
         styles: { fontSize: 8 },
         headStyles: { fillColor: [41, 114, 94] },
         columnStyles: {
-          0: { cellWidth: 20 },
-          1: { cellWidth: 35 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 20 },
-          4: { cellWidth: 25 },
-          5: { cellWidth: 25 },
-          6: { cellWidth: 30 },
+          0: { cellWidth: 15 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 15 },
+          4: { cellWidth: 20 },
+          5: { cellWidth: 40 },
+          6: { cellWidth: 25 },
         },
       })
 
