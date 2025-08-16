@@ -13,6 +13,7 @@ import {
   saveConfigAction,
   trashReservationAction, // Nueva acción para enviar a papelera
   updateReservationStatusByDate,
+  updateReservation,
   deleteReservationPermanentlyAction, // Declaración de la variable
   deleteExpenseAction, // Declaración de la variable
 } from "@/app/actions"
@@ -25,6 +26,10 @@ type Ctx = {
     payload: Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt">,
   ) => Promise<Reservation>
   actualizarEstadoDia: (fechaISO: string, estado: DayStatus) => Promise<void>
+  updateReserva: (
+    id: string,
+    payload: Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt">,
+  ) => Promise<Reservation>
   enviarReservaAPapelera: (id: string) => Promise<void> // Nueva
   recuperarReserva: (id: string) => Promise<void> // Nueva
   eliminarReservaPermanentemente: (id: string) => Promise<void> // Nueva
@@ -102,6 +107,23 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  const updateReserva: Ctx["updateReserva"] = async (id, payload) => {
+    try {
+      const updated = await updateReservation(id, payload)
+      await refresh() // Refresh all data to ensure consistency
+      toast({ title: "Reserva actualizada", description: `Total: ${updated.total.toLocaleString("es-AR")}` })
+      return updated
+    } catch (error: any) {
+      console.error("Error detallado al actualizar reserva:", error)
+      toast({
+        title: "Error al actualizar reserva",
+        description: error.message || "Ocurrió un error desconocido.",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
   const enviarReservaAPapelera: Ctx["enviarReservaAPapelera"] = async (id) => {
     const trashed = await trashReservationAction(id)
     setState((s) => ({ ...s, reservas: s.reservas.filter((r) => r.id !== id) })) // Quitar de activas
@@ -173,6 +195,7 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
     refresh,
     addReserva,
     actualizarEstadoDia,
+    updateReserva,
     enviarReservaAPapelera,
     recuperarReserva,
     eliminarReservaPermanentemente,

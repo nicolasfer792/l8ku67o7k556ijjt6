@@ -27,7 +27,7 @@ export function DateSearch() {
       <form onSubmit={handleSearch} className="flex items-center gap-2">
         <div className="relative flex-grow">
           <input
-            type="date"
+        type="date"
             value={searchDate}
             onChange={(e) => setSearchDate(e.target.value)}
             className="pl-8 pr-10 py-1 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-sm w-full"

@@ -1,3 +1,4 @@
+
 "use server"
 
 import { getSupabaseServer } from "@/lib/supabase/server"
@@ -123,18 +124,40 @@ export async function fetchInitialData(): Promise<AppStateShape> {
   return { reservas, gastos, config }
 }
 
-export async function createReservation(formData: FormData) {
+export async function createReservation(formData: FormData | Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt">) {
   const supabase = getSupabaseServer()
 
-  // Extract data from FormData
-  const nombreCliente = formData.get("cliente") as string
-  const fecha = formData.get("fecha") as string
-  const cantidadPersonas = Number.parseInt(formData.get("personas") as string)
-  const extrasFijosSeleccionados = JSON.parse((formData.get("extrasFijos") as string) || "[]")
-  const cantidades = JSON.parse((formData.get("itemsPorCantidad") as string) || "{}")
-  const notas = formData.get("notas") as string
-  const tipo = (formData.get("tipo") as string) || "normal" // 'migrada' for migrated reservations
-  const estado = (formData.get("estado") as DayStatus) || "confirmado"
+  // Handle both FormData and plain object inputs
+  let nombreCliente: string
+  let fecha: string
+  let cantidadPersonas: number
+  let extrasFijosSeleccionados: string[]
+  let cantidades: Record<string, number>
+  let notas: string
+  let tipo: string
+  let estado: DayStatus
+
+  if (formData instanceof FormData) {
+    // Extract data from FormData
+    nombreCliente = formData.get("cliente") as string
+    fecha = formData.get("fecha") as string
+    cantidadPersonas = Number.parseInt(formData.get("personas") as string)
+    extrasFijosSeleccionados = JSON.parse((formData.get("extrasFijos") as string) || "[]")
+    cantidades = JSON.parse((formData.get("itemsPorCantidad") as string) || "{}")
+    notas = formData.get("notas") as string
+    tipo = (formData.get("tipo") as string) || "normal"
+    estado = (formData.get("estado") as DayStatus) || "confirmado"
+  } else {
+    // Handle plain object input
+    nombreCliente = formData.nombreCliente
+    fecha = formData.fecha
+    cantidadPersonas = formData.cantidadPersonas
+    extrasFijosSeleccionados = formData.extrasFijosSeleccionados || []
+    cantidades = formData.cantidades || {}
+    notas = formData.notas || ""
+    tipo = formData.tipo || "normal"
+    estado = formData.estado || "confirmado"
+  }
 
   const payload = {
     nombreCliente,
@@ -291,9 +314,17 @@ export async function trashReservationAction(id: string) {
 
 export async function recoverReservationAction(id: string) {
   const supabase = getSupabaseServer()
+  // Buscar la reserva original para mantener el estado
+  const { data: original, error: findErr } = await supabase
+    .from("reservations")
+    .select("*")
+    .eq("id", id)
+    .single()
+  if (findErr) throw new Error(`Error al buscar reserva: ${findErr.message}`)
+
   const { data, error } = await supabase
     .from("reservations")
-    .update({ estado: "interesado", deleted_at: null }) // O el estado anterior si lo guardáramos
+    .update({ estado: "confirmado", deleted_at: null })
     .eq("id", id)
     .select("*")
     .single()
@@ -302,6 +333,78 @@ export async function recoverReservationAction(id: string) {
     throw new Error(`Error de DB al recuperar reserva: ${error.message}`)
   }
   return mapRowToReservation(data)
+}
+
+export async function updateReservation(
+  id: string,
+  data: {
+    nombreCliente?: string
+    fecha?: string
+    cantidadPersonas?: number
+    extrasFijosSeleccionados?: string[]
+    cantidades?: Record<string, number>
+    estado?: DayStatus
+    notas?: string
+  }
+) {
+  const supabase = getSupabaseServer()
+
+  // Cargar config
+  const { data: cfgRows, error: cfgLoadErr } = await supabase
+    .from("pricing_config")
+    .select("*")
+    .eq("id", "singleton")
+    .limit(1)
+  if (cfgLoadErr) throw new Error(`Error al cargar configuración para actualizar reserva: ${cfgLoadErr.message}`)
+
+  const cfg = cfgRows?.[0] ? mapRowToConfig(cfgRows[0]) : undefined
+  if (!cfg) throw new Error("No hay configuración de precios disponible.")
+
+  // Obtener la reserva actual
+  const { data: currentReservation, error: currentErr } = await supabase
+    .from("reservations")
+    .select("*")
+    .eq("id", id)
+    .single()
+  if (currentErr) throw new Error(`Error al buscar reserva: ${currentErr.message}`)
+
+  // Calcular el nuevo total si hay cambios relevantes
+  const payload = {
+    nombreCliente: data.nombreCliente ?? currentReservation.nombre_cliente,
+    fecha: data.fecha ?? currentReservation.fecha,
+    cantidadPersonas: data.cantidadPersonas ?? currentReservation.cantidad_personas,
+    extrasFijosSeleccionados: data.extrasFijosSeleccionados ?? currentReservation.extras_fijos_seleccionados,
+    cantidades: data.cantidades ?? currentReservation.cantidades,
+    estado: data.estado ?? currentReservation.estado,
+    notas: data.notas ?? currentReservation.notas,
+  }
+
+  const calc = computeReservationTotal(payload, cfg)
+
+  const updateData = {
+    nombre_cliente: payload.nombreCliente,
+    fecha: payload.fecha,
+    cantidad_personas: payload.cantidadPersonas,
+    extras_fijos_seleccionados: payload.extrasFijosSeleccionados,
+    cantidades: payload.cantidades,
+    estado: payload.estado,
+    es_fin_de_semana: calc.esFinDeSemana,
+    total: calc.total,
+    notas: payload.notas ?? null,
+  }
+
+  const { data: updatedReservation, error: updateErr } = await supabase
+    .from("reservations")
+    .update(updateData)
+    .eq("id", id)
+    .select("*")
+    .single()
+  if (updateErr) {
+    console.error("Error al actualizar reserva:", updateErr)
+    throw new Error(`Error de DB al actualizar reserva: ${updateErr.message}`)
+  }
+
+  return mapRowToReservation(updatedReservation)
 }
 
 export async function purgeOldTrashedReservationsAction() {
