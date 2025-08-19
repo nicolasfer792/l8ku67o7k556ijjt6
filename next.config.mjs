@@ -3,14 +3,13 @@ const nextConfig = {
   // Suprimir advertencias conocidas de Supabase
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.externals.push('canvas');
+      config.externals.push('pdfjs-dist'); // Externalize pdfjs-dist for server build
     } else {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-        canvas: false,
       }
     }
     
