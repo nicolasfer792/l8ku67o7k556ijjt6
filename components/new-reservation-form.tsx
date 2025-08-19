@@ -72,6 +72,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
         notas,
         incluirLimpieza,
         costoLimpieza,
+        tipo,
       })
       onCreated && onCreated(nuevo.id)
       // reset básico
@@ -128,26 +129,6 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                 className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div className="animate-staggered-fade-in delay-200">
-              <Label>Tipo de reserva</Label>
-              <Select value={tipo} onValueChange={(v: "salon" | "patio") => {
-                setTipo(v)
-                if (v === "patio") {
-                  setExtrasSel([])
-                  setCantidades({})
-                  setIncluirLimpieza(false)
-                  setCostoLimpieza(0)
-                }
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="salon">Salón</SelectItem>
-                  <SelectItem value="patio">Patio</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="animate-staggered-fade-in delay-300">
               <Label>Estado</Label>
               <Select value={estado} onValueChange={(v: DayStatus) => setEstado(v)}>
@@ -161,6 +142,30 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="animate-staggered-fade-in delay-200">
+            <Label>Tipo de reserva</Label>
+            <Select
+              value={tipo}
+              onValueChange={(v: "salon" | "patio") => {
+                setTipo(v)
+                if (v === "patio") {
+                  setExtrasSel([])
+                  setCantidades({})
+                  setIncluirLimpieza(false)
+                  setCostoLimpieza(0)
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="salon">Salón</SelectItem>
+                <SelectItem value="patio">Patio</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {tipo === "salon" && (

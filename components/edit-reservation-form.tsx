@@ -26,9 +26,12 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
   const [fecha, setFecha] = React.useState(reservation.fecha)
   const [personas, setPersonas] = React.useState(reservation.cantidadPersonas)
   const [estado, setEstado] = React.useState<DayStatus>(reservation.estado)
+  const [tipo, setTipo] = React.useState<"salon" | "patio" | "migrada">(reservation.tipo || "salon")
   const [extrasSel, setExtrasSel] = React.useState(reservation.extrasFijosSeleccionados)
   const [cantidades, setCantidades] = React.useState(reservation.cantidades)
   const [notas, setNotas] = React.useState(reservation.notas || "")
+  const [incluirLimpieza, setIncluirLimpieza] = React.useState(reservation.incluirLimpieza || false)
+  const [costoLimpieza, setCostoLimpieza] = React.useState(reservation.costoLimpieza || 0)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const calc = computeReservationTotal(
@@ -38,8 +41,11 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
       cantidadPersonas: personas || 0,
       extrasFijosSeleccionados: extrasSel,
       cantidades,
+      tipo,
       estado,
       notas,
+      incluirLimpieza,
+      costoLimpieza,
     },
     state.config,
   )
@@ -61,6 +67,9 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
         cantidades,
         estado,
         notas,
+        tipo,
+        incluirLimpieza,
+        costoLimpieza,
       })
       onEdited && onEdited(reservation.id)
     } catch (error: any) {
@@ -121,57 +130,108 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notas">Notas / Tipo de evento</Label>
-            <Textarea
-              id="notas"
-              value={notas}
-              onChange={(e) => setNotas(e.target.value)}
-              placeholder="Ej: Cumpleaños de 15, Boda, Evento corporativo..."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Servicios extras (precio fijo)</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {state.config.extrasFijos.map((ex) => {
-                const checked = extrasSel.includes(ex.id)
-                return (
-                  <label key={ex.id} className="flex items-center gap-2 rounded-md border p-2">
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={(v) => {
-                        setExtrasSel((s) => (v ? [...s, ex.id] : s.filter((id) => id !== ex.id)))
-                      }}
-                    />
-                    <span className="text-sm">{ex.nombre}</span>
-                    <span className="ml-auto text-sm text-muted-foreground">{ex.precio.toLocaleString("es-AR")}</span>
-                  </label>
-                )
-              })}
+          {tipo !== "migrada" && (
+            <div>
+              <Label>Tipo de reserva</Label>
+              <Select
+                value={tipo}
+                onValueChange={(v: "salon" | "patio") => {
+                  setTipo(v)
+                  if (v === "patio") {
+                    setExtrasSel([])
+                    setCantidades({})
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="salon">Salón</SelectItem>
+                  <SelectItem value="patio">Patio</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-2">
-            <Label>Ítems por cantidad</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {state.config.itemsPorCantidad.map((it) => (
-                <div key={it.id} className="rounded-md border p-2">
-                  <div className="text-sm font-medium">{it.nombre}</div>
-                  <div className="text-xs text-muted-foreground">x {it.precioUnitario.toLocaleString("es-AR")} c/u</div>
-                  <Input
-                    className="mt-2"
-                    type="number"
-                    min={0}
-                    value={cantidades[it.id] || 0}
-                    onChange={(e) => setCantidades((s) => ({ ...s, [it.id]: Number(e.target.value) }))}
-                  />
+          {tipo === "salon" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="notas">Notas / Tipo de evento</Label>
+                <Textarea
+                  id="notas"
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
+                  placeholder="Ej: Cumpleaños de 15, Boda, Evento corporativo..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Servicios extras (precio fijo)</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {state.config.extrasFijos.map((ex) => {
+                    const checked = extrasSel.includes(ex.id)
+                    return (
+                      <label key={ex.id} className="flex items-center gap-2 rounded-md border p-2">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            setExtrasSel((s) => (v ? [...s, ex.id] : s.filter((id) => id !== ex.id)))
+                          }}
+                        />
+                        <span className="text-sm">{ex.nombre}</span>
+                        <span className="ml-auto text-sm text-muted-foreground">
+                          {ex.precio.toLocaleString("es-AR")}
+                        </span>
+                      </label>
+                    )
+                  })}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <PriceBreakdown breakdown={calc.breakdown} total={calc.total} />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="incluir-limpieza"
+                    checked={incluirLimpieza}
+                    onCheckedChange={(v) => setIncluirLimpieza(!!v)}
+                  />
+                  <Label htmlFor="incluir-limpieza">Incluir costo de limpieza</Label>
+                </div>
+                {incluirLimpieza && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Costo de limpieza</Label>
+                      <Input
+                        type="number"
+                        value={costoLimpieza}
+                        onChange={(e) => setCostoLimpieza(Number(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Ítems por cantidad</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {state.config.itemsPorCantidad.map((it) => (
+                    <div key={it.id} className="rounded-md border p-2">
+                      <div className="text-sm font-medium">{it.nombre}</div>
+                      <div className="text-xs text-muted-foreground">
+                        x {it.precioUnitario.toLocaleString("es-AR")} c/u
+                      </div>
+                      <Input
+                        className="mt-2"
+                        type="number"
+                        min={0}
+                        value={cantidades[it.id] || 0}
+                        onChange={(e) => setCantidades((s) => ({ ...s, [it.id]: Number(e.target.value) }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <PriceBreakdown breakdown={calc.breakdown} total={calc.total} />
+            </>
+          )}
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={onCancel}>

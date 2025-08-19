@@ -155,6 +155,11 @@ export function ReservationDetailsDialog({ date, reservations, open, onOpenChang
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm font-medium">Tipo:</span>
+                            <span className="text-sm capitalize">{r.tipo === "migrada" ? "Migrada" : r.tipo || "Salón"}</span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">Modalidad:</span>
                             <span className="text-sm">{r.esFinDeSemana ? "Fin de semana" : "Entre semana"}</span>
                           </div>
 

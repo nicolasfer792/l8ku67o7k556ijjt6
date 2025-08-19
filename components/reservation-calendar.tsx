@@ -28,9 +28,8 @@ function statusForDate(reservas: ReturnType<typeof useAtila>["state"]["reservas"
   return "interesado"
 }
 
-function hasMigratedReservations(reservas: ReturnType<typeof useAtila>["state"]["reservas"], iso: string): boolean {
-  const rs = reservas.filter((r) => r.fecha === iso)
-  return rs.some((r) => r.tipo === "migrada")
+function reservationsForDate(reservas: ReturnType<typeof useAtila>["state"]["reservas"], iso: string) {
+  return reservas.filter((r) => r.fecha === iso)
 }
 
 function colorForStatus(status: DayStatus | "libre") {
@@ -132,17 +131,17 @@ export function ReservationCalendar(
                   if (!date) return <div key={j} className="aspect-square rounded-md bg-muted/40" />
                   const iso = toISODate(date)
                   const st = statusForDate(state.reservas, iso)
-                  const hasMigrated = hasMigratedReservations(state.reservas, iso)
+                  const dailyReservations = reservationsForDate(state.reservas, iso)
                   return (
                     <button
                       key={j}
                       className={cn(
                         "aspect-square rounded-md border text-left p-1 sm:p-2 transition-all duration-200 hover:scale-105 hover-lift",
                         "flex flex-col relative",
-                        colorForStatus(st), // Apply background to the button
-                        "text-gray-800", // Ensure text is readable on light background
-                        st !== "libre" && "hover:bg-opacity-80", // Add hover effect for non-libre days
-                        st === "libre" && "hover:bg-muted", // Keep original hover for libre days
+                        colorForStatus(st),
+                        "text-gray-800",
+                        st !== "libre" && "hover:bg-opacity-80",
+                        st === "libre" && "hover:bg-muted",
                         "focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50",
                         "animate-fade-in"
                       )}
@@ -152,11 +151,20 @@ export function ReservationCalendar(
                       tabIndex={0}
                     >
                       <div className="text-[10px] sm:text-xs font-medium">{date.getDate()}</div>
-                      {hasMigrated && (
+                      {dailyReservations.some((r) => r.tipo === "migrada") && (
                         <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" title="Reserva migrada" />
                       )}
-                      <div className="mt-auto flex items-center gap-1 min-w-0">
-                        <span className="text-[10px] sm:text-xs capitalize truncate">{st}</span>
+                      <div className="mt-auto flex flex-col items-start gap-1 min-w-0">
+                        {dailyReservations
+                          .filter((r) => r.tipo !== "migrada")
+                          .map((r) => (
+                            <span key={r.id} className="text-[10px] sm:text-xs capitalize truncate">
+                              {r.tipo}
+                            </span>
+                          ))}
+                        {dailyReservations.length === 0 && (
+                          <span className="text-[10px] sm:text-xs capitalize truncate">{st}</span>
+                        )}
                       </div>
                     </button>
                   )
