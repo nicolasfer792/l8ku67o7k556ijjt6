@@ -310,3 +310,117 @@
 }
 
 /* Clean modern components matching reference design */
+
+@layer components {
+  .clean-card {
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--border));
+    border-width: 1px;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  }
+
+  .clean-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-item {
+    position: relative;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  .nav-item:hover {
+    background-color: hsl(var(--muted));
+  }
+
+  .nav-item[data-state="active"] {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .upload-area {
+    border-width: 2px;
+    border-style: dashed;
+    border-color: hsl(var(--border));
+    border-radius: var(--radius);
+    background-color: hsl(var(--muted));
+    transition: all 0.2s;
+  }
+
+  .upload-area:hover {
+    background-color: hsl(var(--accent));
+    border-color: hsl(var(--primary));
+  }
+
+  .upload-area.drag-over {
+    background-color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+  }
+
+  .modern-button {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    transition: background-color 0.2s;
+  }
+
+  .modern-button:hover {
+    background-color: hsl(var(--primary) / 0.9);
+  }
+
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: #22c55e; /* green-500 */
+  }
+
+  @media (max-width: 640px) {
+    .date-search-form {
+      width: 100%;
+    }
+    
+    .date-search-input {
+      min-width: 120px !important;
+      font-size: 0.875rem;
+    }
+    
+    .status-indicator {
+      justify-content: flex-start;
+      width: 100%;
+    }
+  }
+
+  .login-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+}
