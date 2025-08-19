@@ -272,8 +272,17 @@ export function ConfigForm() {
                 className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
+            <div className="animate-staggered-fade-in delay-350">
+              <Label>Precio base Patio</Label>
+              <Input
+                type="number"
+                value={cfg.precioPatio}
+                onChange={(e) => updateNumber("precioPatio", Number(e.target.value))}
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+              />
+            </div>
             <div className="animate-staggered-fade-in delay-400">
-              <Label>Costo fijo de limpieza</Label>
+              <Label>Costo de limpieza por defecto</Label>
               <Input
                 type="number"
                 value={cfg.costoLimpiezaFijo}

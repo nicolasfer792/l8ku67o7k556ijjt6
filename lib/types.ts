@@ -17,6 +17,7 @@ export type PricingConfig = {
   baseFinDeSemana: number
   precioPorPersonaEntreSemana: number
   precioPorPersonaFinDeSemana: number
+  precioPatio: number // Precio base para el patio
   costoLimpiezaFijo: number // Este es un gasto del negocio, no se suma al cliente
   extrasFijos: FixedExtra[]
   itemsPorCantidad: QuantityItem[]
@@ -35,7 +36,9 @@ export type Reservation = {
   creadoEn: string
   notas?: string // Nueva nota para el evento
   deletedAt?: string | null // Para la papelera de reciclaje
-  tipo?: "normal" | "migrada" // Adding tipo field to distinguish migrated reservations
+  tipo?: "salon" | "patio" | "migrada" // Tipo de reserva: salon, patio, o migrada
+  incluirLimpieza: boolean // Indica si se incluye el costo de limpieza
+  costoLimpieza: number // Costo de limpieza específico para esta reserva
 }
 
 export type Expense = {

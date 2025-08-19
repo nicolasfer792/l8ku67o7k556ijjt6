@@ -2,11 +2,23 @@ import type { PricingConfig, Reservation } from "./types"
 import { isWeekend } from "./date-utils"
 
 export function computeReservationTotal(
-  input: Omit<Reservation, "total" | "esFinDeSemana" | "creadoEn" | "id" | "deletedAt">,
+  input: Omit<Reservation, "total" | "esFinDeSemana" | "creadoEn" | "id" | "deletedAt"> & {
+    tipo?: "salon" | "patio" | "migrada"
+    incluirLimpieza?: boolean
+    costoLimpieza?: number
+  },
   config: PricingConfig,
 ) {
   const weekend = isWeekend(input.fecha)
-  const base = weekend ? config.baseFinDeSemana : config.baseEntreSemana
+  
+  // Determine base price based on type and day of the week
+  let base = 0;
+  if (input.tipo === "patio") {
+    base = config.precioPatio || 0; // Use specific patio price, default to 0 if not set
+  } else {
+    base = weekend ? config.baseFinDeSemana : config.baseEntreSemana;
+  }
+
   const perPerson = weekend ? config.precioPorPersonaFinDeSemana : config.precioPorPersonaEntreSemana
 
   const extrasFijosTotal = input.extrasFijosSeleccionados.reduce((acc, id) => {
@@ -20,11 +32,17 @@ export function computeReservationTotal(
     return acc + (item ? item.precioUnitario * cantidad : 0)
   }, 0)
 
-  // La limpieza ya NO se suma al total del cliente, es un gasto del negocio.
-  // const limpieza = config.costoLimpiezaFijo;
+  // Calculate cleaning cost if applicable
+  let limpieza = 0;
+  if (input.incluirLimpieza && input.costoLimpieza !== undefined && input.costoLimpieza > 0) {
+    limpieza = input.costoLimpieza;
+  } else if (input.incluirLimpieza && config.costoLimpiezaFijo > 0) {
+    // Fallback to default if specific cost is not provided but included
+    limpieza = config.costoLimpiezaFijo;
+  }
 
-  const total = base + input.cantidadPersonas * perPerson + extrasFijosTotal + cantidadesTotal
-
+  const total = base + input.cantidadPersonas * perPerson + extrasFijosTotal + cantidadesTotal + limpieza;
+ 
   return {
     total,
     esFinDeSemana: weekend,
@@ -33,7 +51,7 @@ export function computeReservationTotal(
       perPerson,
       extrasFijosTotal,
       cantidadesTotal,
-      limpieza: config.costoLimpiezaFijo, // Se mantiene para mostrar en el desglose, pero no suma al total del cliente
+      limpieza: limpieza, // The actual cleaning cost added to the total
     },
   }
 }

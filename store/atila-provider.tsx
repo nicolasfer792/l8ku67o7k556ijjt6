@@ -53,7 +53,8 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
       baseFinDeSemana: 0,
       precioPorPersonaEntreSemana: 0,
       precioPorPersonaFinDeSemana: 0,
-      costoLimpiezaFijo: 0,
+      precioPatio: 0, // Precio base para el patio
+      costoLimpiezaFijo: 0, // Este es un gasto del negocio, no se suma al cliente
       extrasFijos: [],
       itemsPorCantidad: [],
     },
