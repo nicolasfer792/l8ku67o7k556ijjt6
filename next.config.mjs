@@ -2,7 +2,9 @@
 const nextConfig = {
   // Suprimir advertencias conocidas de Supabase
   webpack: (config, { isServer }) => {
-    if (!isServer) {
+    if (isServer) {
+      config.externals.push('canvas');
+    } else {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -29,7 +31,7 @@ const nextConfig = {
   
   // Optimizaciones de producción
   experimental: {
-    optimizePackageImports: ['@supabase/supabase-js', 'lucide-react', 'recharts', 'pdfjs-dist', 'xlsx'],
+    optimizePackageImports: ['@supabase/supabase-js', '@supabase/ssr', 'lucide-react', 'recharts', 'pdfjs-dist', 'xlsx'],
   },
   
   // Configuración para mejor rendimiento

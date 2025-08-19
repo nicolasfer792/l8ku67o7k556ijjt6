@@ -61,6 +61,9 @@
     "xlsx": "^0.18.5",
     "pdfjs-dist": "^2.16.105",
     "bcryptjs": "^2.4.3",
+    "canvas": "^2.11.0",
+    "@supabase/supabase-js": "^2.4.0",
+    "@supabase/ssr": "^0.1.0",
     "zod": "3.25.67"
   },
   "devDependencies": {
