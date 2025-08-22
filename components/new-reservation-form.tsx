@@ -246,15 +246,17 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                   ))}
                 </div>
               </div>
-
-              {/* Price Breakdown */}
-              <PriceBreakdown
-                breakdown={calc.breakdown}
-                total={calc.total}
-                className="animate-staggered-fade-in delay-700"
-              />
             </React.Fragment>
           )}
+
+          {/* Price Breakdown */}
+          <PriceBreakdown
+            breakdown={calc.breakdown}
+            total={calc.total}
+            costoLimpieza={calc.costoLimpieza} // Pass costoLimpieza
+            className="animate-staggered-fade-in delay-700"
+            tipo={tipo}
+          />
 
           <div className="flex justify-end animate-staggered-fade-in delay-800">
             <Button

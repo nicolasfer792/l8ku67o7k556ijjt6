@@ -4,23 +4,24 @@ type Props = {
   breakdown: {
     base: number
     perPerson: number
-    extrasFijosTotal: number
-    cantidadesTotal: number
-    limpieza: number
+    patio: number
   }
   total: number
+  costoLimpieza: number // Add costoLimpieza to props
   className?: string
+  tipo?: "salon" | "patio" | "migrada"
 }
 
 export function PriceBreakdown(
-  { breakdown, total, className }: Props = {
-    breakdown: { base: 0, perPerson: 0, extrasFijosTotal: 0, cantidadesTotal: 0, limpieza: 0 },
+  { breakdown, total, costoLimpieza, className }: Props = {
+    breakdown: { base: 0, perPerson: 0, patio: 0 },
     total: 0,
+    costoLimpieza: 0, // Default value for costoLimpieza
     className: "",
   },
 ) {
   // Calcula las ganancias
-  const ganancias = total - breakdown.limpieza
+  const ganancias = total - costoLimpieza
 
   return (
     <div className={`rounded-md border p-3 text-sm space-y-1 ${className}`}>
@@ -33,16 +34,8 @@ export function PriceBreakdown(
         <span>{formatCurrency(breakdown.perPerson)}</span>
       </div>
       <div className="flex justify-between">
-        <span>Extras fijos:</span>
-        <span>{formatCurrency(breakdown.extrasFijosTotal)}</span>
-      </div>
-      <div className="flex justify-between">
-        <span>Ítems por cantidad:</span>
-        <span>{formatCurrency(breakdown.cantidadesTotal)}</span>
-      </div>
-      <div className="flex justify-between">
-        <span>Limpieza:</span>
-        <span>{formatCurrency(breakdown.limpieza)}</span>
+        <span>Patio:</span>
+        <span>{formatCurrency(breakdown.patio)}</span>
       </div>
       <div className="border-t pt-2 mt-2 flex justify-between font-semibold">
         <span>Total a cobrar:</span>

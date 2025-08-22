@@ -1,0 +1,6 @@
+-- Add missing columns to the reservations table
+ALTER TABLE public.reservations
+ADD COLUMN IF NOT EXISTS tipo TEXT NOT NULL DEFAULT 'normal',
+ADD COLUMN IF NOT EXISTS incluir_limpieza BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS costo_limpieza NUMERIC NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;

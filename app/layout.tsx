@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Montserrat, Open_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
-import { AtilaProvider } from "@/store/atila-provider"
+import { Providers } from "@/components/providers"
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -31,11 +31,11 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${montserrat.variable} ${openSans.variable}`}>
       <body className="font-body antialiased">
-        <AtilaProvider>
+        <Providers>
           <div className="min-h-screen bg-slate-50">
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
           </div>
-        </AtilaProvider>
+        </Providers>
         <Toaster />
       </body>
     </html>

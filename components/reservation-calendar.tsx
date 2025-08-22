@@ -32,7 +32,7 @@ function reservationsForDate(reservas: ReturnType<typeof useAtila>["state"]["res
   return reservas.filter((r) => r.fecha === iso)
 }
 
-function colorForStatus(status: DayStatus | "libre") {
+function colorForStatus(status: DayStatus | "libre"): string {
   switch (status) {
     case "libre":
       return "bg-emerald-100" // Lighter shade
@@ -93,6 +93,8 @@ export function ReservationCalendar(
   if (week.length > 0) {
     while (week.length < 7) week.push(null)
     weeks.push(week)
+  } else {
+    return;
   }
 
   return (
@@ -138,7 +140,7 @@ export function ReservationCalendar(
                       className={cn(
                         "aspect-square rounded-md border text-left p-1 sm:p-2 transition-all duration-200 hover:scale-105 hover-lift",
                         "flex flex-col relative",
-                        colorForStatus(st),
+                        colorForStatus(st as DayStatus | "libre"),
                         "text-gray-800",
                         st !== "libre" && "hover:bg-opacity-80",
                         st === "libre" && "hover:bg-muted",

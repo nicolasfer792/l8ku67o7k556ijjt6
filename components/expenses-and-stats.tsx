@@ -64,7 +64,15 @@ function groupByPeriod(
   })
   rows.sort((a, b) => a.key.localeCompare(b.key))
 
-  return rows
+  return {
+    rows,
+    totals: {
+      ingresos: rows.reduce((acc, r) => acc + r.ingresos, 0),
+      gastos: rows.reduce((acc, r) => acc + r.gastos, 0),
+      ganancia: rows.reduce((acc, r) => acc + r.ganancia, 0),
+      perdida: rows.reduce((acc, r) => acc + r.perdida, 0),
+    },
+  }
 }
 
 export function ExpensesAndStats() {
@@ -74,7 +82,7 @@ export function ExpensesAndStats() {
   const [fecha, setFecha] = React.useState<string>(new Date().toISOString().slice(0, 10))
   const [periodo, setPeriodo] = React.useState<"semana" | "mes" | "anio">("mes")
 
-  const data = groupByPeriod(state.reservas, state.gastos, periodo)
+  const { rows: chartData, totals } = groupByPeriod(state.reservas, state.gastos, periodo)
 
   const add = (e: React.FormEvent) => {
     e.preventDefault()
@@ -145,7 +153,7 @@ export function ExpensesAndStats() {
           </div>
           <div className="h-64 animate-staggered-fade-in delay-500">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="key" />
                 <YAxis />
@@ -160,7 +168,7 @@ export function ExpensesAndStats() {
           </div>
           <div className="h-64 animate-staggered-fade-in delay-600">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="key" />
                 <YAxis />
@@ -172,6 +180,24 @@ export function ExpensesAndStats() {
                 {/* La línea de "Pérdida" se ha eliminado */}
               </LineChart>
             </ResponsiveContainer>
+            {/* Financial Summary */}
+            <div className="mt-6 space-y-3 animate-staggered-fade-in delay-700">
+              <h3 className="text-lg font-semibold text-slate-800">Resumen del Período</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="flex flex-col items-center justify-center rounded-lg bg-green-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
+                  <span className="text-sm font-medium text-green-700">Ingresos Totales</span>
+                  <span className="text-xl font-bold text-green-800 animate-pulse-text">{formatCurrency(totals.ingresos)}</span>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-lg bg-orange-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
+                  <span className="text-sm font-medium text-orange-700">Gastos Totales</span>
+                  <span className="text-xl font-bold text-orange-800 animate-pulse-text">{formatCurrency(totals.gastos)}</span>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-lg bg-teal-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
+                  <span className="text-sm font-medium text-teal-700">Ganancia Neta</span>
+                  <span className="text-xl font-bold text-teal-800 animate-pulse-text">{formatCurrency(totals.ganancia - totals.perdida)}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

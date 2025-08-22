@@ -25,7 +25,7 @@ export function ConfigForm() {
   }, [state.config])
 
   const updateNumber = (key: keyof typeof cfg, value: number) => {
-    setCfg((s) => ({ ...s, [key]: value }))
+    setCfg((s) => ({ ...s, [key]: parseFloat(value.toString()) }))
   }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

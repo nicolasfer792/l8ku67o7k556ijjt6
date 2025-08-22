@@ -22,6 +22,8 @@ function mapRowToReservation(row: any): Reservation {
     notas: row.notas ?? undefined,
     deletedAt: row.deleted_at ?? null,
     tipo: row.tipo ?? "normal", // Adding tipo field to distinguish migrated reservations
+    incluirLimpieza: row.incluir_limpieza ?? false,
+    costoLimpieza: Number(row.costo_limpieza || 0),
   }
 }
 function mapRowToExpense(row: any): Expense {
@@ -38,6 +40,7 @@ function mapRowToConfig(row: any): PricingConfig {
     baseFinDeSemana: Number(row.base_fin_de_semana),
     precioPorPersonaEntreSemana: Number(row.precio_por_persona_entre_semana),
     precioPorPersonaFinDeSemana: Number(row.precio_por_persona_fin_de_semana),
+    precioPatio: Number(row.precio_patio || 0), // Add precioPatio
     costoLimpiezaFijo: Number(row.costo_limpieza_fijo),
     extrasFijos: (row.extras_fijos || []) as PricingConfig["extrasFijos"],
     itemsPorCantidad: (row.items_por_cantidad || []) as PricingConfig["itemsPorCantidad"],
@@ -66,6 +69,7 @@ export async function fetchInitialData(): Promise<AppStateShape> {
       baseFinDeSemana: 140000,
       precioPorPersonaEntreSemana: 3000,
       precioPorPersonaFinDeSemana: 4000,
+      precioPatio: 50000, // Add default for precioPatio
       costoLimpiezaFijo: 20000,
       extrasFijos: [
         { id: "vajillas", nombre: "Vajillas", precio: 15000 },
@@ -84,6 +88,7 @@ export async function fetchInitialData(): Promise<AppStateShape> {
       base_fin_de_semana: defaultCfg.baseFinDeSemana,
       precio_por_persona_entre_semana: defaultCfg.precioPorPersonaEntreSemana,
       precio_por_persona_fin_de_semana: defaultCfg.precioPorPersonaFinDeSemana,
+      precio_patio: defaultCfg.precioPatio, // Add precioPatio to insert
       costo_limpieza_fijo: defaultCfg.costoLimpiezaFijo,
       extras_fijos: defaultCfg.extrasFijos,
       items_por_cantidad: defaultCfg.itemsPorCantidad,
@@ -134,8 +139,10 @@ export async function createReservation(formData: FormData | Omit<Reservation, "
   let extrasFijosSeleccionados: string[]
   let cantidades: Record<string, number>
   let notas: string
-  let tipo: string
+  let tipo: "salon" | "patio" | "migrada"
   let estado: DayStatus
+  let incluirLimpieza: boolean
+  let costoLimpieza: number
 
   if (formData instanceof FormData) {
     // Extract data from FormData
@@ -145,8 +152,10 @@ export async function createReservation(formData: FormData | Omit<Reservation, "
     extrasFijosSeleccionados = JSON.parse((formData.get("extrasFijos") as string) || "[]")
     cantidades = JSON.parse((formData.get("itemsPorCantidad") as string) || "{}")
     notas = formData.get("notas") as string
-    tipo = (formData.get("tipo") as string) || "normal"
+    tipo = (formData.get("tipo") as "salon" | "patio" | "migrada") || "salon"
     estado = (formData.get("estado") as DayStatus) || "confirmado"
+    incluirLimpieza = formData.get("incluirLimpieza") === "true"
+    costoLimpieza = Number(formData.get("costoLimpieza") || 0)
   } else {
     // Handle plain object input
     nombreCliente = formData.nombreCliente
@@ -155,8 +164,15 @@ export async function createReservation(formData: FormData | Omit<Reservation, "
     extrasFijosSeleccionados = formData.extrasFijosSeleccionados || []
     cantidades = formData.cantidades || {}
     notas = formData.notas || ""
-    tipo = formData.tipo || "normal"
+    tipo = formData.tipo || "salon"
     estado = formData.estado || "confirmado"
+    incluirLimpieza = formData.incluirLimpieza ?? false
+    costoLimpieza = formData.costoLimpieza ?? 0
+  }
+
+  // If it's a migrated reservation and no notes are provided, add a default note
+  if (tipo === "migrada" && !notas) {
+    notas = "Reserva migrada sin descripción original."
   }
 
   const payload = {
@@ -167,6 +183,9 @@ export async function createReservation(formData: FormData | Omit<Reservation, "
     cantidades,
     estado,
     notas,
+    tipo, // Include tipo in payload for computeReservationTotal
+    incluirLimpieza,
+    costoLimpieza,
   }
 
   // Cargar config
@@ -196,7 +215,9 @@ export async function createReservation(formData: FormData | Omit<Reservation, "
     creado_en: new Date().toISOString(),
     notas: payload.notas ?? null,
     deleted_at: null,
-    tipo: tipo, // Adding tipo field to distinguish migrated reservations
+    tipo: payload.tipo, // Use payload.tipo
+    incluir_limpieza: payload.incluirLimpieza,
+    costo_limpieza: calc.costoLimpieza,
   }
 
   const { data: savedReservation, error: resErr } = await supabase
@@ -209,12 +230,13 @@ export async function createReservation(formData: FormData | Omit<Reservation, "
     throw new Error(`Error de DB al crear reserva: ${resErr.message} (Código: ${resErr.code})`)
   }
 
-  // Registrar el gasto de limpieza solo para reservas normales y migradas
-  if (cfg.costoLimpiezaFijo > 0) {
+  // Registrar el gasto de limpieza solo para reservas normales y migradas, excepto para reservas de tipo "patio"
+  // Registrar el gasto de limpieza solo para reservas de tipo "salon"
+  if (calc.costoLimpieza > 0 && payload.tipo === "salon") {
     const expenseRow = {
       id: crypto.randomUUID(),
       nombre: `Limpieza - ${payload.nombreCliente} (${payload.fecha})`,
-      monto: cfg.costoLimpiezaFijo,
+      monto: calc.costoLimpieza,
       fecha: payload.fecha,
     }
     const { error: expErr } = await supabase.from("expenses").insert(expenseRow)
@@ -231,17 +253,20 @@ export async function createReservation(formData: FormData | Omit<Reservation, "
 export async function createReservationLegacy(
   payload: Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt">,
 ) {
-  const formData = new FormData()
-  formData.append("cliente", payload.nombreCliente)
-  formData.append("fecha", payload.fecha)
-  formData.append("personas", payload.cantidadPersonas.toString())
-  formData.append("extrasFijos", JSON.stringify(payload.extrasFijosSeleccionados))
-  formData.append("itemsPorCantidad", JSON.stringify(payload.cantidades))
-  formData.append("estado", payload.estado)
-  if (payload.notas) formData.append("notas", payload.notas)
-
-  return createReservation(formData)
-}
+   const formData = new FormData()
+   formData.append("cliente", payload.nombreCliente)
+   formData.append("fecha", payload.fecha)
+   formData.append("personas", payload.cantidadPersonas.toString())
+   formData.append("extrasFijos", JSON.stringify(payload.extrasFijosSeleccionados))
+   formData.append("itemsPorCantidad", JSON.stringify(payload.cantidades))
+   formData.append("estado", payload.estado)
+   if (payload.notas) formData.append("notas", payload.notas)
+   if (payload.tipo) formData.append("tipo", payload.tipo)
+   formData.append("incluirLimpieza", payload.incluirLimpieza ? "true" : "false")
+   formData.append("costoLimpieza", payload.costoLimpieza.toString())
+ 
+   return createReservation(formData)
+ }
 
 export async function updateReservationStatusByDate(fechaISO: string, estado: DayStatus) {
   const supabase = getSupabaseServer()
@@ -274,6 +299,8 @@ export async function updateReservationStatusByDate(fechaISO: string, estado: Da
       notas: null,
       deleted_at: null,
       tipo: "normal", // Adding tipo field to distinguish migrated reservations
+      incluir_limpieza: false, // Default value
+      costo_limpieza: 0, // Default value
     }
     const { data: inserted, error: insErr } = await supabase.from("reservations").insert(row).select("*").single()
     if (insErr) {
@@ -345,53 +372,62 @@ export async function updateReservation(
     cantidades?: Record<string, number>
     estado?: DayStatus
     notas?: string
+    tipo?: "salon" | "patio" | "migrada"
+    incluirLimpieza?: boolean
+    costoLimpieza?: number
   }
 ) {
-  const supabase = getSupabaseServer()
-
-  // Cargar config
-  const { data: cfgRows, error: cfgLoadErr } = await supabase
-    .from("pricing_config")
-    .select("*")
-    .eq("id", "singleton")
-    .limit(1)
-  if (cfgLoadErr) throw new Error(`Error al cargar configuración para actualizar reserva: ${cfgLoadErr.message}`)
-
-  const cfg = cfgRows?.[0] ? mapRowToConfig(cfgRows[0]) : undefined
-  if (!cfg) throw new Error("No hay configuración de precios disponible.")
-
-  // Obtener la reserva actual
-  const { data: currentReservation, error: currentErr } = await supabase
-    .from("reservations")
-    .select("*")
-    .eq("id", id)
-    .single()
-  if (currentErr) throw new Error(`Error al buscar reserva: ${currentErr.message}`)
-
-  // Calcular el nuevo total si hay cambios relevantes
-  const payload = {
-    nombreCliente: data.nombreCliente ?? currentReservation.nombre_cliente,
-    fecha: data.fecha ?? currentReservation.fecha,
-    cantidadPersonas: data.cantidadPersonas ?? currentReservation.cantidad_personas,
-    extrasFijosSeleccionados: data.extrasFijosSeleccionados ?? currentReservation.extras_fijos_seleccionados,
-    cantidades: data.cantidades ?? currentReservation.cantidades,
-    estado: data.estado ?? currentReservation.estado,
-    notas: data.notas ?? currentReservation.notas,
-  }
-
-  const calc = computeReservationTotal(payload, cfg)
-
-  const updateData = {
-    nombre_cliente: payload.nombreCliente,
-    fecha: payload.fecha,
-    cantidad_personas: payload.cantidadPersonas,
-    extras_fijos_seleccionados: payload.extrasFijosSeleccionados,
-    cantidades: payload.cantidades,
-    estado: payload.estado,
-    es_fin_de_semana: calc.esFinDeSemana,
-    total: calc.total,
-    notas: payload.notas ?? null,
-  }
+   const supabase = getSupabaseServer()
+ 
+   // Cargar config
+   const { data: cfgRows, error: cfgLoadErr } = await supabase
+     .from("pricing_config")
+     .select("*")
+     .eq("id", "singleton")
+     .limit(1)
+   if (cfgLoadErr) throw new Error(`Error al cargar configuración para actualizar reserva: ${cfgLoadErr.message}`)
+ 
+   const cfg = cfgRows?.[0] ? mapRowToConfig(cfgRows[0]) : undefined
+   if (!cfg) throw new Error("No hay configuración de precios disponible.")
+ 
+   // Obtener la reserva actual
+   const { data: currentReservation, error: currentErr } = await supabase
+     .from("reservations")
+     .select("*")
+     .eq("id", id)
+     .single()
+   if (currentErr) throw new Error(`Error al buscar reserva: ${currentErr.message}`)
+ 
+   // Calcular el nuevo total si hay cambios relevantes
+   const payload = {
+     nombreCliente: data.nombreCliente ?? currentReservation.nombre_cliente,
+     fecha: data.fecha ?? currentReservation.fecha,
+     cantidadPersonas: data.cantidadPersonas ?? currentReservation.cantidad_personas,
+     extrasFijosSeleccionados: data.extrasFijosSeleccionados ?? currentReservation.extras_fijos_seleccionados,
+     cantidades: data.cantidades ?? currentReservation.cantidades,
+     estado: data.estado ?? currentReservation.estado,
+     notas: data.notas ?? currentReservation.notas,
+     tipo: data.tipo ?? currentReservation.tipo,
+     incluirLimpieza: data.incluirLimpieza ?? currentReservation.incluir_limpieza,
+     costoLimpieza: data.costoLimpieza ?? currentReservation.costo_limpieza,
+   }
+ 
+   const calc = computeReservationTotal(payload, cfg)
+ 
+   const updateData = {
+     nombre_cliente: payload.nombreCliente,
+     fecha: payload.fecha,
+     cantidad_personas: payload.cantidadPersonas,
+     extras_fijos_seleccionados: payload.extrasFijosSeleccionados,
+     cantidades: payload.cantidades,
+     estado: payload.estado,
+     es_fin_de_semana: calc.esFinDeSemana,
+     total: calc.total,
+     notas: payload.notas ?? null,
+     tipo: payload.tipo,
+     incluir_limpieza: payload.incluirLimpieza,
+     costo_limpieza: calc.costoLimpieza,
+   }
 
   const { data: updatedReservation, error: updateErr } = await supabase
     .from("reservations")
@@ -441,6 +477,7 @@ export async function saveConfigAction(cfg: PricingConfig) {
       costo_limpieza_fijo: cfg.costoLimpiezaFijo,
       extras_fijos: cfg.extrasFijos,
       items_por_cantidad: cfg.itemsPorCantidad,
+      precio_patio: cfg.precioPatio,
     },
     { onConflict: "id" },
   )
