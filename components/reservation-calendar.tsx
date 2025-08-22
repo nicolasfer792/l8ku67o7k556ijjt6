@@ -60,8 +60,14 @@ export function ReservationCalendar(
   const daysInMonth = end.getDate()
   const firstWeekday = start.getDay() // 0 = Sunday, 6 = Saturday
 
-  const handlePrev = () => setCurrentMonth((m) => addMonths(m, -1))
-  const handleNext = () => setCurrentMonth((m) => addMonths(m, 1))
+  const handlePrev = () => {
+    setCurrentMonth((m) => addMonths(m, -1))
+    setDialogOpen(false) // Close dialog on month navigation
+  }
+  const handleNext = () => {
+    setCurrentMonth((m) => addMonths(m, 1))
+    setDialogOpen(false) // Close dialog on month navigation
+  }
 
   const handleDayClick = (iso: string, event: React.MouseEvent) => {
     // Add pulse animation to the clicked day
@@ -93,8 +99,6 @@ export function ReservationCalendar(
   if (week.length > 0) {
     while (week.length < 7) week.push(null)
     weeks.push(week)
-  } else {
-    return;
   }
 
   return (
