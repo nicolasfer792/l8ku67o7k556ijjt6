@@ -93,7 +93,7 @@ export function ExpensesAndStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in items-stretch">
       <Card className="w-full hover-lift">
         <CardHeader>
           <CardTitle className="animate-slide-in-left">Gastos extras</CardTitle>
