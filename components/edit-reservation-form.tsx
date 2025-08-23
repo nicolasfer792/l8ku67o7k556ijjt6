@@ -229,7 +229,7 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
                   ))}
                 </div>
               </div>
-              <PriceBreakdown breakdown={calc.breakdown} total={calc.total} />
+              <PriceBreakdown breakdown={calc.breakdown} total={calc.total} costoLimpieza={calc.costoLimpieza} />
             </>
           )}
 

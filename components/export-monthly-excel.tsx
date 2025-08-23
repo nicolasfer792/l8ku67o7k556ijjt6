@@ -75,6 +75,18 @@ export function ExportMonthlyExcel() {
       ]
 
       const ws = XLSX.utils.aoa_to_sheet([header, ...rows, [], ...summary])
+
+      // Set column widths
+      ws["!cols"] = [
+        { wch: 10 }, // Fecha
+        { wch: 25 }, // Cliente
+        { wch: 15 }, // Estado
+        { wch: 10 }, // Personas
+        { wch: 15 }, // Total
+        { wch: 30 }, // Extras y Items
+        { wch: 40 }, // Notas
+      ]
+
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, "Reservas")
 

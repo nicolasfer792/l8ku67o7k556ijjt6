@@ -1,10 +1,9 @@
-
 "use server"
 
 import { getSupabaseServer } from "@/lib/supabase/server"
 import type { AppStateShape, Expense, PricingConfig, Reservation, DayStatus } from "@/lib/types"
 import { computeReservationTotal } from "@/lib/pricing"
-import { isWeekend } from "@/lib/date-utils"
+import { isWeekend, startOfMonth, endOfMonth, toISODate } from "@/lib/date-utils"
 
 // Helpers de mapeo entre DB y tipos
 function mapRowToReservation(row: any): Reservation {
@@ -103,11 +102,7 @@ export async function fetchInitialData(): Promise<AppStateShape> {
   }
 
   // Solo cargar reservas activas (no trashed)
-  const { data: resRows, error: resErr } = await supabase
-    .from("reservations")
-    .select("*")
-    .neq("estado", "trashed") // Excluir trashed
-    .order("fecha", { ascending: true })
+  const { data: resRows, error: resErr } = await supabase.from("reservations").select("*").neq("estado", "trashed").order("fecha", { ascending: true })
   if (resErr) {
     console.error("Error al cargar reservas iniciales:", resErr)
     throw new Error(`Error al cargar reservas: ${resErr.message}`)
@@ -514,8 +509,8 @@ export async function listReservationsByMonthAction(yyyyMM: string, includeTrash
   let query = supabase
     .from("reservations")
     .select("*")
-    .gte("fecha", `${yyyyMM}-01`)
-    .lte("fecha", `${yyyyMM}-31`)
+    .gte("fecha", toISODate(startOfMonth(new Date(yyyyMM))))
+    .lte("fecha", toISODate(endOfMonth(new Date(yyyyMM))))
     .order("fecha", { ascending: true })
 
   if (!includeTrashed) {
@@ -540,6 +535,20 @@ export async function listTrashedReservationsAction() {
   if (error) {
     console.error("Error al listar reservas en papelera:", error)
     throw new Error(`Error de DB al listar papelera: ${error.message}`)
+  }
+
+  async function fetchReservationByIdAction(id: string): Promise<Reservation | null> {
+    const supabase = getSupabaseServer()
+    const { data, error } = await supabase
+      .from("reservations")
+      .select("*")
+      .eq("id", id)
+      .single()
+    if (error) {
+      console.error("Error al buscar reserva por ID:", error)
+      throw new Error(`Error de DB al buscar reserva por ID: ${error.message}`)
+    }
+    return data ? mapRowToReservation(data) : null
   }
   return (data || []).map(mapRowToReservation)
 }

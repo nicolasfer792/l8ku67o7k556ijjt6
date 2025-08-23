@@ -142,7 +142,7 @@ export function ReservationCalendar(
                     <button
                       key={j}
                       className={cn(
-                        "aspect-square rounded-md border text-left p-1 sm:p-2 transition-all duration-200 hover:scale-105 hover-lift",
+                        "aspect-square rounded-md border text-left p-0.5 sm:p-1 transition-all duration-200 hover:scale-105 hover-lift",
                         "flex flex-col relative",
                         colorForStatus(st as DayStatus | "libre"),
                         "text-gray-800",
@@ -156,21 +156,21 @@ export function ReservationCalendar(
                       role="button"
                       tabIndex={0}
                     >
-                      <div className="text-[10px] sm:text-xs font-medium">{date.getDate()}</div>
+                      <div className="text-[8px] sm:text-[10px] font-medium">{date.getDate()}</div>
                       {dailyReservations.some((r) => r.tipo === "migrada") && (
                         <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" title="Reserva migrada" />
                       )}
-                      <div className="mt-auto flex flex-col items-start gap-1 min-w-0">
+                      <div className="mt-auto flex flex-col items-start gap-0.5 min-w-0">
                         {dailyReservations
                           .filter((r) => r.tipo !== "migrada")
                           .map((r) => (
-                            <span key={r.id} className="text-[10px] sm:text-xs capitalize truncate">
+                            <span key={r.id} className="text-[8px] sm:text-[10px] capitalize truncate">
                               {r.tipo}
                             </span>
                           ))}
-                        {dailyReservations.length === 0 && (
-                          <span className="text-[10px] sm:text-xs capitalize truncate">{st}</span>
-                        )}
+                      {dailyReservations.length === 0 && (
+                        <span className="text-[8px] sm:text-[10px] capitalize truncate">{st}</span>
+                      )}
                       </div>
                     </button>
                   )

@@ -52,4 +52,5 @@ export type AppStateShape = {
   reservas: Reservation[]
   gastos: Expense[]
   config: PricingConfig
+  clientNameFilter?: string
 }
