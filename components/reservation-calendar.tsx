@@ -105,7 +105,7 @@ export function ReservationCalendar(
     <>
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base sm:text-lg">
+          <CardTitle className="text-lg md:text-xl">
             Calendario de Reservas
             <div className="text-xs text-muted-foreground">
               {currentMonth.toLocaleString("es-ES", { month: "long", year: "numeric" })}
@@ -121,7 +121,7 @@ export function ReservationCalendar(
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 text-xs sm:text-sm font-medium text-muted-foreground mb-2">
+          <div className="grid grid-cols-7 text-sm md:text-base font-medium text-muted-foreground mb-2">
             <div className="text-center">Dom</div>
             <div className="text-center">Lun</div>
             <div className="text-center">Mar</div>
@@ -156,7 +156,7 @@ export function ReservationCalendar(
                       role="button"
                       tabIndex={0}
                     >
-                      <div className="text-[8px] sm:text-[10px] font-medium">{date.getDate()}</div>
+                      <div className="text-xs md:text-sm font-medium">{date.getDate()}</div>
                       {dailyReservations.some((r) => r.tipo === "migrada") && (
                         <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" title="Reserva migrada" />
                       )}
@@ -164,14 +164,14 @@ export function ReservationCalendar(
                         {dailyReservations
                           .filter((r) => r.tipo !== "migrada")
                           .map((r) => (
-                            <span key={r.id} className="text-[8px] sm:text-[10px] capitalize truncate">
+                            <span key={r.id} className="text-xs md:text-sm capitalize truncate">
                               {r.tipo}
                             </span>
                           ))}
-                      {dailyReservations.length === 0 && (
-                        <span className="text-[8px] sm:text-[10px] capitalize truncate">{st}</span>
-                      )}
-                      </div>
+                    {dailyReservations.length === 0 && (
+                      <span className="text-xs md:text-sm capitalize truncate">{st}</span>
+                    )}
+                    </div>
                     </button>
                   )
                 })}
