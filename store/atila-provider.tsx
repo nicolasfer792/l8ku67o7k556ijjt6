@@ -23,12 +23,22 @@ type Ctx = {
   state: AppStateShape
   refresh: () => Promise<void>
   addReserva: (
-    payload: Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt">,
+    payload: Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt"> & {
+      precioBaseFijo: number
+      precioPorPersonaFijo: number
+      extrasFijosTotalFijo: number
+      cantidadesTotalFijo: number
+    },
   ) => Promise<Reservation>
   actualizarEstadoDia: (fechaISO: string, estado: DayStatus) => Promise<void>
   updateReserva: (
     id: string,
-    payload: Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt">,
+    payload: Omit<Reservation, "id" | "total" | "esFinDeSemana" | "creadoEn" | "deletedAt"> & {
+      precioBaseFijo: number
+      precioPorPersonaFijo: number
+      extrasFijosTotalFijo: number
+      cantidadesTotalFijo: number
+    },
   ) => Promise<Reservation>
   enviarReservaAPapelera: (id: string) => Promise<void> // Nueva
   recuperarReserva: (id: string) => Promise<void> // Nueva
@@ -78,7 +88,28 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
 
   const addReserva: Ctx["addReserva"] = async (payload) => {
     try {
-      const saved = await createReservation(payload)
+      const cantidadesConPrecio = Object.entries(payload.cantidades).reduce(
+        (acc, [id, cantidad]) => {
+          const item = state.config.itemsPorCantidad.find((i) => i.id === id)
+          if (item) {
+            acc[id] = {
+              cantidad: (cantidad as any).cantidad as number,
+              precioUnitarioFijo: item.precioUnitario,
+            }
+          }
+          return acc
+        },
+        {} as Record<string, { cantidad: number; precioUnitarioFijo: number }>,
+      )
+
+      const saved = await createReservation({
+        ...payload,
+        cantidades: cantidadesConPrecio,
+        precioBaseFijo: payload.precioBaseFijo,
+        precioPorPersonaFijo: payload.precioPorPersonaFijo,
+        extrasFijosTotalFijo: payload.extrasFijosTotalFijo,
+        cantidadesTotalFijo: payload.cantidadesTotalFijo,
+      })
       // Después de crear la reserva (y su gasto de limpieza asociado),
       // refrescamos todo el estado para que los gráficos se actualicen con los nuevos gastos.
       await refresh()
@@ -110,7 +141,13 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
 
   const updateReserva: Ctx["updateReserva"] = async (id, payload) => {
     try {
-      const updated = await updateReservation(id, payload)
+      const updated = await updateReservation(id, {
+        ...payload,
+        precioBaseFijo: payload.precioBaseFijo,
+        precioPorPersonaFijo: payload.precioPorPersonaFijo,
+        extrasFijosTotalFijo: payload.extrasFijosTotalFijo,
+        cantidadesTotalFijo: payload.cantidadesTotalFijo,
+      })
       await refresh() // Refresh all data to ensure consistency
       toast({ title: "Reserva actualizada", description: `Total: ${updated.total.toLocaleString("es-AR")}` })
       return updated

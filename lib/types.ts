@@ -29,7 +29,7 @@ export type Reservation = {
   fecha: string // ISO date YYYY-MM-DD
   cantidadPersonas: number
   extrasFijosSeleccionados: string[] // ids de FixedExtra
-  cantidades: Record<string, number> // id de QuantityItem -> cantidad
+  cantidades: Record<string, { cantidad: number; precioUnitarioFijo: number }> // id de QuantityItem -> { cantidad, precioUnitarioFijo }
   estado: DayStatus // interesado, señado, confirmado, trashed
   esFinDeSemana: boolean
   total: number // Total a cobrar al cliente
@@ -39,6 +39,17 @@ export type Reservation = {
   tipo?: "salon" | "patio" | "migrada" // Tipo de reserva: salon, patio, o migrada
   incluirLimpieza: boolean // Indica si se incluye el costo de limpieza
   costoLimpieza: number // Costo de limpieza específico para esta reserva
+  precioBaseFijo?: number
+  precioPorPersonaFijo?: number
+  extrasFijosTotalFijo?: number
+  cantidadesTotalFijo?: number
+  telefono?: string // Número de teléfono del cliente
+  // Campos para el estado de pago
+  pagado?: number // Monto total pagado por el cliente
+  pagadoEn?: Array<{
+    fecha: string
+    monto: number
+  }> // Registro de pagos con fecha y monto
 }
 
 export type Expense = {

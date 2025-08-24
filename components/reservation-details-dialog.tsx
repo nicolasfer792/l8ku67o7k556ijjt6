@@ -16,9 +16,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Trash2, Calendar, Users, Clock, Pencil } from "lucide-react"
+import { Trash2, Calendar, Users, Clock, Pencil, DollarSign } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { EditReservationForm } from "./edit-reservation-form"
+import { PaymentDialog } from "./payment-dialog"
 
 type Props = {
   date: string
@@ -45,6 +46,8 @@ function formatDaysRemaining(days: number): string {
 export function ReservationDetailsDialog({ date, reservations, open, onOpenChange }: Props) {
   const { enviarReservaAPapelera, refresh, state } = useAtila()
   const [editingReservation, setEditingReservation] = React.useState<Reservation | null>(null)
+  const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false)
+  const [selectedReservationForPayment, setSelectedReservationForPayment] = React.useState<Reservation | null>(null)
 
   const handleTrash = async (id: string) => {
     await enviarReservaAPapelera(id)
@@ -53,16 +56,37 @@ export function ReservationDetailsDialog({ date, reservations, open, onOpenChang
   }
 
   const getExtraDetails = (reservation: Reservation) => {
+    // Para extras fijos, usamos los precios de la configuración actual porque no tenemos precios fijos guardados
     const extrasFijos = reservation.extrasFijosSeleccionados
       .map((id) => state.config.extrasFijos.find((extra) => extra.id === id))
       .filter((extra): extra is NonNullable<typeof extra> => !!extra)
 
-    const itemsPorCantidad = Object.entries(reservation.cantidades)
-      .map(([id, cantidad]) => {
-        const item = state.config.itemsPorCantidad.find((item) => item.id === id)
-        return item ? { ...item, cantidad } : null
-      })
-      .filter((item): item is NonNullable<typeof item> => !!item)
+    // Para items por cantidad, usamos los precios fijos guardados en la reserva si están disponibles
+    const itemsPorCantidad: any[] = []
+    
+    Object.entries(reservation.cantidades).forEach(([id, data]) => {
+      if (typeof data === "object" && data !== null && "precioUnitarioFijo" in data) {
+        // Usar el precio unitario fijo guardado en la reserva
+        const itemData = data as { cantidad: number; precioUnitarioFijo: number }
+        // Buscar el nombre del item en la configuración actual
+        const itemTemplate = state.config.itemsPorCantidad.find((item) => item.id === id)
+        if (itemTemplate || itemData.precioUnitarioFijo > 0) {
+          itemsPorCantidad.push({
+            id,
+            nombre: itemTemplate ? itemTemplate.nombre : "Item desconocido",
+            precioUnitario: itemData.precioUnitarioFijo,
+            cantidad: itemData.cantidad
+          })
+        }
+      } else if (typeof data === "number") {
+        // Fallback para el formato antiguo (si existe)
+        const cantidad = data
+        const itemTemplate = state.config.itemsPorCantidad.find((item) => item.id === id)
+        if (itemTemplate) {
+          itemsPorCantidad.push({ ...itemTemplate, cantidad })
+        }
+      }
+    })
 
     return { extrasFijos, itemsPorCantidad }
   }
@@ -151,6 +175,13 @@ export function ReservationDetailsDialog({ date, reservations, open, onOpenChang
                             <span className="text-sm font-medium">Personas:</span>
                             <span className="text-sm">{r.cantidadPersonas}</span>
                           </div>
+
+                          {r.telefono && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">Teléfono:</span>
+                              <span className="text-sm">{r.telefono}</span>
+                            </div>
+                          )}
 
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -257,6 +288,17 @@ export function ReservationDetailsDialog({ date, reservations, open, onOpenChang
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => {
+                            setSelectedReservationForPayment(r)
+                            setPaymentDialogOpen(true)
+                          }}
+                        >
+                          <DollarSign className="h-4 w-4 mr-2" />
+                          Estado de Pago
+                        </Button>
                       </div>
                     </div>
                   )
@@ -264,6 +306,20 @@ export function ReservationDetailsDialog({ date, reservations, open, onOpenChang
               )}
             </div>
           </>
+        )}
+        
+        {/* Payment Dialog */}
+        {selectedReservationForPayment && (
+          <PaymentDialog
+            reservation={selectedReservationForPayment}
+            open={paymentDialogOpen}
+            onOpenChange={(isOpen) => {
+              setPaymentDialogOpen(isOpen)
+              if (isOpen) {
+                refresh()
+              }
+            }}
+          />
         )}
       </DialogContent>
     </Dialog>

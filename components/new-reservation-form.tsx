@@ -29,8 +29,9 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
   const [incluirLimpieza, setIncluirLimpieza] = React.useState(false)
   const [costoLimpieza, setCostoLimpieza] = React.useState(0)
   const [extrasSel, setExtrasSel] = React.useState<string[]>([])
-  const [cantidades, setCantidades] = React.useState<Record<string, number>>({})
+  const [cantidades, setCantidades] = React.useState<Record<string, any>>({})
   const [notas, setNotas] = React.useState("") // Nuevo estado para notas
+  const [telefono, setTelefono] = React.useState("") // Nuevo estado para teléfono
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   React.useEffect(() => {
@@ -64,19 +65,38 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
     try {
       const nuevo = await addReserva({
         nombreCliente: nombre,
+        telefono,
         fecha,
         cantidadPersonas: personas,
         extrasFijosSeleccionados: extrasSel,
-        cantidades,
+        // Convertir cantidades al formato con precioUnitarioFijo si están en formato antiguo
+        cantidades: Object.entries(cantidades).reduce((acc, [id, data]) => {
+          if (typeof data === 'number') {
+            // Formato antiguo: convertir a formato nuevo con precio actual
+            const item = state.config.itemsPorCantidad.find(item => item.id === id)
+            if (item) {
+              acc[id] = { cantidad: data, precioUnitarioFijo: item.precioUnitario }
+            }
+          } else if (typeof data === 'object' && data !== null) {
+            // Formato nuevo: usar tal cual
+            acc[id] = data
+          }
+          return acc
+        }, {} as Record<string, { cantidad: number; precioUnitarioFijo: number }>),
         estado,
         notas,
         incluirLimpieza,
         costoLimpieza,
         tipo,
+        precioBaseFijo: calc.breakdown.base,
+        precioPorPersonaFijo: calc.breakdown.perPerson,
+        extrasFijosTotalFijo: calc.breakdown.extrasFijosTotal,
+        cantidadesTotalFijo: calc.breakdown.cantidadesTotal,
       })
       onCreated && onCreated(nuevo.id)
       // reset básico
       setNombre("")
+      setTelefono("") // Resetear teléfono
       // mantener fecha por conveniencia
       setPersonas(0)
       setEstado("interesado")
@@ -115,10 +135,20 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
               />
             </div>
             <div className="animate-staggered-fade-in delay-100">
+              <Label htmlFor="telefono">Teléfono</Label>
+              <Input
+                id="telefono"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="Número de teléfono"
+                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+              />
+            </div>
+            <div className="animate-staggered-fade-in delay-200">
               <Label htmlFor="fecha">Fecha</Label>
               <Input id="fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
             </div>
-            <div className="animate-staggered-fade-in delay-200">
+            <div className="animate-staggered-fade-in delay-300">
               <Label htmlFor="personas">Cantidad de personas</Label>
               <Input
                 id="personas"
@@ -129,7 +159,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                 className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
               />
             </div>
-            <div className="animate-staggered-fade-in delay-300">
+            <div className="animate-staggered-fade-in delay-400">
               <Label>Estado</Label>
               <Select value={estado} onValueChange={(v: DayStatus) => setEstado(v)}>
                 <SelectTrigger>
@@ -239,8 +269,14 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                         className="mt-2 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
                         type="number"
                         min={0}
-                        value={cantidades[it.id] || 0}
-                        onChange={(e) => setCantidades((s) => ({ ...s, [it.id]: Number(e.target.value) }))}
+                        value={typeof cantidades[it.id] === 'number' ? cantidades[it.id] : (typeof cantidades[it.id] === 'object' ? cantidades[it.id].cantidad : 0)}
+                        onChange={(e) => {
+                          const value = Number(e.target.value)
+                          setCantidades((s) => ({
+                            ...s,
+                            [it.id]: { cantidad: value, precioUnitarioFijo: it.precioUnitario }
+                          }))
+                        }}
                       />
                     </div>
                   ))}

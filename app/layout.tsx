@@ -30,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`${montserrat.variable} ${openSans.variable}`}>
-      <body className="bg-background text-foreground antialiased">
+      <body className="bg-background text-foreground antialiased font-body">
         <Providers>
           <div className="min-h-screen">
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>

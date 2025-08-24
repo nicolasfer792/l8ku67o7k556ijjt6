@@ -407,10 +407,13 @@ export function ConfigForm() {
             </div>
           </div>
 
-          <div className="flex justify-end animate-staggered-fade-in delay-700">
-            <Button onClick={() => guardarConfig(cfg)} className="modern-button hover-lift transition-all duration-200 hover:shadow-md">
-              Guardar cambios
-            </Button>
+          <div className="space-y-4 animate-staggered-fade-in delay-700">
+            <div className="flex justify-end">
+              <Button onClick={() => guardarConfig(cfg)} className="modern-button hover-lift transition-all duration-200 hover:shadow-md">
+                Guardar cambios
+              </Button>
+            </div>
+            
           </div>
         </CardContent>
       </Card>
