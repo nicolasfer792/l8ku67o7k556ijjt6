@@ -92,6 +92,7 @@ export function ExpensesAndStats() {
     setMonto(0)
   }
 
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in items-stretch">
       <Card className="w-full hover-lift">
@@ -140,7 +141,7 @@ export function ExpensesAndStats() {
           <CardTitle className="animate-slide-in-right">Estadísticas financieras</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2 text-sm animate-staggered-fade-in delay-400">
+          <div className="flex flex-wrap gap-2 text-sm animate-staggered-fade-in delay-400">
             <Button variant={periodo === "semana" ? "default" : "outline"} onClick={() => setPeriodo("semana")} className="transition-all duration-200 hover:scale-105">
               Semanal
             </Button>

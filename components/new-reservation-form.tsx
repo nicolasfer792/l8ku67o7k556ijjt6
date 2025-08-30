@@ -32,6 +32,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
   const [cantidades, setCantidades] = React.useState<Record<string, any>>({})
   const [notas, setNotas] = React.useState("") // Nuevo estado para notas
   const [telefono, setTelefono] = React.useState("") // Nuevo estado para teléfono
+  const [descuentoPorcentaje, setDescuentoPorcentaje] = React.useState(0) // Estado para descuento
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   React.useEffect(() => {
@@ -50,6 +51,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
       notas,
       incluirLimpieza,
       costoLimpieza,
+      descuentoPorcentaje: descuentoPorcentaje || 0,
     },
     state.config,
   )
@@ -92,6 +94,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
         precioPorPersonaFijo: calc.breakdown.perPerson,
         extrasFijosTotalFijo: calc.breakdown.extrasFijosTotal,
         cantidadesTotalFijo: calc.breakdown.cantidadesTotal,
+        descuentoPorcentaje: descuentoPorcentaje || 0,
       })
       onCreated && onCreated(nuevo.id)
       // reset básico
@@ -103,6 +106,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
       setExtrasSel([])
       setCantidades({})
       setNotas("") // Resetear notas
+      setDescuentoPorcentaje(0) // Resetear descuento
     } catch (error: any) {
       toast({
         title: "Error al crear reserva",
@@ -115,67 +119,77 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
   }
 
   return (
-    <Card className="w-full animate-fade-in">
-      <CardHeader>
-        <CardTitle className="animate-slide-in-left">Nueva reserva</CardTitle>
+    <Card className="w-full glass-card animate-fade-in border-0 shadow-2xl bg-gradient-to-br from-white/95 via-white/90 to-white/95 backdrop-blur-xl">
+      <CardHeader className="pb-6">
+        <CardTitle className="animate-slide-in-left text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+          Nueva reserva
+        </CardTitle>
+        <div className="w-16 h-1 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full animate-scale-in delay-300"></div>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={submit} className="space-y-4">
+      <CardContent className="px-8 pb-8">
+        <form onSubmit={submit} className="space-y-6">
           {/* Main Form Content */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="animate-staggered-fade-in">
-              <Label htmlFor="nombre">Nombre</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="animate-staggered-fade-in group">
+              <Label htmlFor="nombre" className="text-sm font-semibold text-gray-700 mb-2 block">Nombre</Label>
               <Input
                 id="nombre"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Nombre del cliente"
                 required
-                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
               />
             </div>
-            <div className="animate-staggered-fade-in delay-100">
-              <Label htmlFor="telefono">Teléfono</Label>
+            <div className="animate-staggered-fade-in delay-100 group">
+              <Label htmlFor="telefono" className="text-sm font-semibold text-gray-700 mb-2 block">Teléfono</Label>
               <Input
                 id="telefono"
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
                 placeholder="Número de teléfono"
-                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
               />
             </div>
-            <div className="animate-staggered-fade-in delay-200">
-              <Label htmlFor="fecha">Fecha</Label>
-              <Input id="fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
+            <div className="animate-staggered-fade-in delay-200 group">
+              <Label htmlFor="fecha" className="text-sm font-semibold text-gray-700 mb-2 block">Fecha</Label>
+              <Input
+                id="fecha"
+                type="date"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+                required
+                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
+              />
             </div>
-            <div className="animate-staggered-fade-in delay-300">
-              <Label htmlFor="personas">Cantidad de personas</Label>
+            <div className="animate-staggered-fade-in delay-300 group">
+              <Label htmlFor="personas" className="text-sm font-semibold text-gray-700 mb-2 block">Cantidad de personas</Label>
               <Input
                 id="personas"
                 type="number"
                 min={0}
                 value={personas}
                 onChange={(e) => setPersonas(Number(e.target.value))}
-                className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
               />
             </div>
-            <div className="animate-staggered-fade-in delay-400">
-              <Label>Estado</Label>
+            <div className="animate-staggered-fade-in delay-400 group sm:col-span-2">
+              <Label className="text-sm font-semibold text-gray-700 mb-2 block">Estado</Label>
               <Select value={estado} onValueChange={(v: DayStatus) => setEstado(v)}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg">
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="interesado">Interesado (sin seña)</SelectItem>
-                  <SelectItem value="señado">Señado</SelectItem>
-                  <SelectItem value="confirmado">Confirmado</SelectItem>
+                <SelectContent className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 rounded-xl">
+                  <SelectItem value="interesado" className="hover:bg-teal-50 transition-colors duration-200">Interesado (sin seña)</SelectItem>
+                  <SelectItem value="señado" className="hover:bg-teal-50 transition-colors duration-200">Señado</SelectItem>
+                  <SelectItem value="confirmado" className="hover:bg-teal-50 transition-colors duration-200">Confirmado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="animate-staggered-fade-in delay-200">
-            <Label>Tipo de reserva</Label>
+          <div className="animate-staggered-fade-in delay-500 group">
+            <Label className="text-sm font-semibold text-gray-700 mb-2 block">Tipo de reserva</Label>
             <Select
               value={tipo}
               onValueChange={(v: "salon" | "patio") => {
@@ -188,44 +202,57 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                 }
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg">
                 <SelectValue placeholder="Seleccionar tipo" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="salon">Salón</SelectItem>
-                <SelectItem value="patio">Patio</SelectItem>
+              <SelectContent className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 rounded-xl">
+                <SelectItem value="salon" className="hover:bg-teal-50 transition-colors duration-200">🏢 Salón</SelectItem>
+                <SelectItem value="patio" className="hover:bg-teal-50 transition-colors duration-200">🌳 Patio</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {tipo === "salon" && (
             <React.Fragment>
-              <div className="space-y-2 animate-staggered-fade-in delay-400">
-                <Label htmlFor="notas">Notas / Tipo de evento</Label>
+              <div className="space-y-3 animate-staggered-fade-in delay-600 group">
+                <Label htmlFor="notas" className="text-sm font-semibold text-gray-700">Notas / Tipo de evento</Label>
                 <Textarea
                   id="notas"
                   value={notas}
                   onChange={(e) => setNotas(e.target.value)}
                   placeholder="Ej: Cumpleaños de 15, Boda, Evento corporativo..."
-                  className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+                  className="min-h-20 px-4 py-3 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg resize-none"
                 />
               </div>
 
-              <div className="space-y-2 animate-staggered-fade-in delay-500">
-                <Label>Servicios extras (precio fijo)</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {state.config.extrasFijos.map((ex) => {
+              <div className="space-y-3 animate-staggered-fade-in delay-700">
+                <Label className="text-sm font-semibold text-gray-700">Servicios extras (precio fijo)</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {state.config.extrasFijos.map((ex, index) => {
                     const checked = extrasSel.includes(ex.id)
                     return (
-                      <label key={ex.id} className="flex items-center gap-2 rounded-md border p-2 hover-lift transition-all duration-200 hover:shadow-sm">
+                      <label
+                        key={ex.id}
+                        className={`flex items-center gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all duration-300 hover-lift hover:shadow-lg group/item ${
+                          checked
+                            ? 'border-teal-500 bg-teal-50/50 shadow-md'
+                            : 'border-gray-200 bg-white/50 backdrop-blur-sm hover:border-gray-300'
+                        }`}
+                        style={{ animationDelay: `${0.8 + index * 0.1}s` }}
+                      >
                         <Checkbox
                           checked={checked}
                           onCheckedChange={(v) => {
                             setExtrasSel((s) => (v ? [...s, ex.id] : s.filter((id) => id !== ex.id)))
                           }}
+                          className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                         />
-                        <span className="text-sm">{ex.nombre}</span>
-                        <span className="ml-auto text-sm text-muted-foreground">{ex.precio.toLocaleString("es-AR")}</span>
+                        <span className="text-sm font-medium flex-1">{ex.nombre}</span>
+                        <span className={`text-sm font-semibold px-2 py-1 rounded-lg ${
+                          checked ? 'text-teal-700 bg-teal-100' : 'text-gray-600 bg-gray-100'
+                        }`}>
+                          ${ex.precio.toLocaleString("es-AR")}
+                        </span>
                       </label>
                     )
                   })}
@@ -233,24 +260,25 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
               </div>
 
               {/* Cleaning Cost Controls */}
-              <div className="space-y-2 animate-staggered-fade-in delay-500">
-                <div className="flex items-center gap-2">
+              <div className="space-y-3 animate-staggered-fade-in delay-800">
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-white/50 backdrop-blur-sm border-2 border-gray-200 hover:border-gray-300 transition-all duration-300 group">
                   <Checkbox
                     id="incluir-limpieza"
                     checked={incluirLimpieza}
                     onCheckedChange={(v) => setIncluirLimpieza(!!v)}
+                    className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                   />
-                  <Label htmlFor="incluir-limpieza">Incluir costo de limpieza</Label>
+                  <Label htmlFor="incluir-limpieza" className="text-sm font-semibold text-gray-700 cursor-pointer">Incluir costo de limpieza</Label>
                 </div>
                 {incluirLimpieza && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Costo de limpieza</Label>
+                  <div className="animate-bounce-in grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="group">
+                      <Label className="text-sm font-semibold text-gray-700 mb-2 block">Costo de limpieza</Label>
                       <Input
                         type="number"
                         value={costoLimpieza}
                         onChange={(e) => setCostoLimpieza(Number(e.target.value))}
-                        className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+                        className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg"
                       />
                     </div>
                   </div>
@@ -258,15 +286,19 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
               </div>
 
               {/* Quantity Items */}
-              <div className="space-y-2 animate-staggered-fade-in delay-600">
-                <Label>Ítems por cantidad</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {state.config.itemsPorCantidad.map((it) => (
-                    <div key={it.id} className="rounded-md border p-2 hover-lift transition-all duration-200 hover:shadow-sm">
-                      <div className="text-sm font-medium">{it.nombre}</div>
-                      <div className="text-xs text-muted-foreground">x {it.precioUnitario.toLocaleString("es-AR")} c/u</div>
+              <div className="space-y-3 animate-staggered-fade-in delay-900">
+                <Label className="text-sm font-semibold text-gray-700">Ítems por cantidad</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {state.config.itemsPorCantidad.map((it, index) => (
+                    <div
+                      key={it.id}
+                      className="rounded-xl border-2 border-gray-200 p-4 bg-white/50 backdrop-blur-sm hover-lift transition-all duration-300 hover:shadow-lg hover:border-gray-300 group"
+                      style={{ animationDelay: `${1 + index * 0.1}s` }}
+                    >
+                      <div className="text-sm font-semibold text-gray-800 mb-1">{it.nombre}</div>
+                      <div className="text-xs text-gray-500 mb-3">x ${it.precioUnitario.toLocaleString("es-AR")} c/u</div>
                       <Input
-                        className="mt-2 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50"
+                        className="h-10 px-3 border border-gray-300 rounded-lg bg-white/80 transition-all duration-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:bg-white hover:border-gray-400"
                         type="number"
                         min={0}
                         value={typeof cantidades[it.id] === 'number' ? cantidades[it.id] : (typeof cantidades[it.id] === 'object' ? cantidades[it.id].cantidad : 0)}
@@ -282,31 +314,59 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                   ))}
                 </div>
               </div>
+              
+              {/* Descuento section */}
+              <div className="space-y-3 animate-staggered-fade-in delay-1000 group">
+                <Label htmlFor="descuento" className="text-sm font-semibold text-gray-700">Descuento (%)</Label>
+                <Input
+                  id="descuento"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={descuentoPorcentaje}
+                  onChange={(e) => setDescuentoPorcentaje(Number(e.target.value))}
+                  placeholder="0"
+                  className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg"
+                />
+                {descuentoPorcentaje > 0 && (
+                  <div className="animate-bounce-in text-sm text-green-700 font-semibold bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                    🎉 Descuento aplicado: {descuentoPorcentaje}% (${((calc.totalSinDescuento * descuentoPorcentaje) / 100).toLocaleString("es-AR")})
+                  </div>
+                )}
+              </div>
             </React.Fragment>
           )}
 
           {/* Price Breakdown */}
           <PriceBreakdown
             breakdown={calc.breakdown}
-            total={calc.total}
+            total={calc.totalSinDescuento}
             costoLimpieza={calc.costoLimpieza} // Pass costoLimpieza
             className="animate-staggered-fade-in delay-700"
             tipo={tipo}
+            descuentoPorcentaje={descuentoPorcentaje || 0}
+            totalConDescuento={calc.totalConDescuento}
           />
 
-          <div className="flex justify-end animate-staggered-fade-in delay-800">
+          <div className="flex justify-end animate-staggered-fade-in delay-1100">
             <Button
               type="submit"
-              className="transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 animate-pulse-button"
+              className={`h-14 px-8 text-lg font-semibold rounded-xl transition-all duration-300 hover-lift active:scale-95 ${
+                isSubmitting
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl'
+              }`}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
-                <>
-                  <span className="animate-spin mr-2">⏳</span>
-                  Creando...
-                </>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Creando reserva...</span>
+                </div>
               ) : (
-                "Crear reserva"
+                <div className="flex items-center gap-2">
+                  <span>✨ Crear reserva</span>
+                </div>
               )}
             </Button>
           </div>

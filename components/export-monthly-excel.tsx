@@ -35,9 +35,10 @@ export function ExportMonthlyExcel() {
 
         const cantidadesDetails = Object.entries(r.cantidades)
           .map(([id, cantidad]) => {
-            if (cantidad > 0) {
+            const qty = typeof cantidad === 'object' ? cantidad.cantidad : cantidad
+            if (qty > 0) {
               const item = config.itemsPorCantidad.find((i) => i.id === id)
-              return item ? `${cantidad}x ${item.nombre}` : `${cantidad}x ${id}`
+              return item ? `${qty}x ${item.nombre}` : `${qty}x ${id}`
             }
             return null
           })
@@ -110,33 +111,55 @@ export function ExportMonthlyExcel() {
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-end">
-        <div className="w-full sm:w-auto animate-staggered-fade-in">
-          <label className="block text-sm mb-1 font-medium">Mes a exportar</label>
-          <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-full sm:w-auto transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50" />
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+        <div className="w-full sm:w-auto animate-staggered-fade-in group">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Mes a exportar</label>
+          <Input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg"
+          />
         </div>
-        <Button onClick={exportExcel} disabled={loading} className="w-full sm:w-auto hover-lift transition-all duration-200 hover:shadow-md" size="default">
+        <Button
+          onClick={exportExcel}
+          disabled={loading}
+          className="h-12 px-6 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold transition-all duration-300 hover-lift hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          size="default"
+        >
           {loading ? (
-            <>
-              <FileText className="mr-2 h-4 w-4 animate-spin" />
-              Generando...
-            </>
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 animate-spin" />
+              <span>Generando...</span>
+            </div>
           ) : (
-            <>
-              <Download className="mr-2 h-4 w-4" />
-              Descargar Excel
-            </>
+            <div className="flex items-center gap-2">
+              <Download className="h-5 w-5" />
+              <span>Descargar Excel</span>
+            </div>
           )}
         </Button>
       </div>
 
-      <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md animate-staggered-fade-in delay-200">
-        <p className="font-medium mb-1">Información del reporte:</p>
-        <ul className="space-y-1">
-          <li className="animate-staggered-fade-in delay-300">• Incluye todas las reservas activas del mes seleccionado</li>
-          <li className="animate-staggered-fade-in delay-400">• Contiene resumen estadístico al final del archivo</li>
-          <li className="animate-staggered-fade-in delay-500">• El archivo se guardará en tu carpeta de descargas en formato .xlsx</li>
+      <div className="text-sm text-gray-600 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-4 rounded-xl animate-staggered-fade-in delay-200">
+        <p className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-blue-600" />
+          Información del reporte:
+        </p>
+        <ul className="space-y-2">
+          <li className="flex items-start gap-2 animate-staggered-fade-in delay-300">
+            <span className="text-blue-500 mt-1">•</span>
+            <span>Incluye todas las reservas activas del mes seleccionado</span>
+          </li>
+          <li className="flex items-start gap-2 animate-staggered-fade-in delay-400">
+            <span className="text-blue-500 mt-1">•</span>
+            <span>Contiene resumen estadístico al final del archivo</span>
+          </li>
+          <li className="flex items-start gap-2 animate-staggered-fade-in delay-500">
+            <span className="text-blue-500 mt-1">•</span>
+            <span>El archivo se guardará en tu carpeta de descargas en formato .xlsx</span>
+          </li>
         </ul>
       </div>
     </div>

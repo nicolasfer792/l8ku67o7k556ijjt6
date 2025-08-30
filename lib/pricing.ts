@@ -11,6 +11,7 @@ export function computeReservationTotal(
     precioPorPersonaFijo?: number
     extrasFijosTotalFijo?: number
     cantidadesTotalFijo?: number
+    descuentoPorcentaje?: number
   },
   config: PricingConfig,
 ) {
@@ -78,10 +79,17 @@ export function computeReservationTotal(
     }
   }
 
-  const total = base + input.cantidadPersonas * perPerson + extrasFijosTotal + cantidadesTotal;
+  const totalSinDescuento = base + input.cantidadPersonas * perPerson + extrasFijosTotal + cantidadesTotal;
+  
+  // Aplicar descuento si existe
+  const descuentoPorcentaje = input.descuentoPorcentaje || 0;
+  const montoDescuento = (totalSinDescuento * descuentoPorcentaje) / 100;
+  const totalConDescuento = totalSinDescuento - montoDescuento;
  
   return {
-    total,
+    total: totalConDescuento,
+    totalSinDescuento,
+    totalConDescuento,
     esFinDeSemana: weekend,
     breakdown: {
       base,

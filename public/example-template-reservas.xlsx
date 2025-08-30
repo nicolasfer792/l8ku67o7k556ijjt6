@@ -1,0 +1,17 @@
+This is a placeholder for an Excel template file.
+
+Expected columns for migration:
+- Fecha (Date): Date of the reservation in DD/MM/YYYY format
+- Evento (Event): Name of the event/client
+- Cant Personas (Number of People): Number of attendees
+- Telefono (Phone): Contact phone number
+- Presupuesto OR COSTO TOTAL (Budget/COST TOTAL): Total cost
+- Seña OR Sena (Deposit): Deposit amount (saved in notes)
+- Vajilla, Mesas, ETC: Additional items/services (saved in notes)
+- Saldo (Balance): Remaining balance
+
+Example format:
+Fecha,Evento,Cant Personas,Telefono,Presupuesto,Seña,Vajilla,Mesas,ETC,Saldo
+15/08/2025,Boda María,50,099123456,500000,100000,Vajilla completa,Mesas redondas,Decoración florar,400000
+20/08/2025,Cumpleaños Juan,25,099654321,120000,50000,,Mesas rectangulares,15000,70000
+25/08/2025,Empresa XYZ,30,099987654,200000,0,Vajilla básica,,Servicio de catering,200000

@@ -13,6 +13,7 @@ import { PriceBreakdown } from "./price-breakdown"
 import type { DayStatus, Reservation } from "@/lib/types"
 import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
+import { formatCurrency } from "@/lib/date-utils"
 
 type Props = {
   reservation: Reservation
@@ -32,6 +33,7 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
   const [notas, setNotas] = React.useState(reservation.notas || "")
   const [incluirLimpieza, setIncluirLimpieza] = React.useState(reservation.incluirLimpieza || false)
   const [costoLimpieza, setCostoLimpieza] = React.useState(reservation.costoLimpieza || 0)
+  const [descuentoPorcentaje, setDescuentoPorcentaje] = React.useState(reservation.descuentoPorcentaje || 0)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const calc = computeReservationTotal(
@@ -46,6 +48,7 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
       notas,
       incluirLimpieza,
       costoLimpieza,
+      descuentoPorcentaje,
     },
     state.config,
   )
@@ -70,7 +73,8 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
         tipo,
         incluirLimpieza,
         costoLimpieza,
-      })
+        descuentoPorcentaje,
+      } as any)
       onEdited && onEdited(reservation.id)
     } catch (error: any) {
       toast({
@@ -222,14 +226,43 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
                         className="mt-2"
                         type="number"
                         min={0}
-                        value={cantidades[it.id] || 0}
-                        onChange={(e) => setCantidades((s) => ({ ...s, [it.id]: Number(e.target.value) }))}
+                        value={typeof cantidades[it.id] === 'number' ? cantidades[it.id] : (typeof cantidades[it.id] === 'object' ? cantidades[it.id].cantidad : 0)}
+                        onChange={(e) => {
+                          const newValue = Number(e.target.value)
+                          setCantidades((s) => ({
+                            ...s,
+                            [it.id]: { cantidad: newValue, precioUnitarioFijo: it.precioUnitario }
+                          }))
+                        }}
                       />
                     </div>
                   ))}
                 </div>
               </div>
-              <PriceBreakdown breakdown={calc.breakdown} total={calc.total} costoLimpieza={calc.costoLimpieza} />
+              
+              <div className="space-y-2">
+                <Label htmlFor="descuento">Descuento (0-100%)</Label>
+                <Input
+                  id="descuento"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.01}
+                  value={descuentoPorcentaje}
+                  onChange={(e) => setDescuentoPorcentaje(Number(e.target.value))}
+                  placeholder="Porcentaje de descuento"
+                />
+                {descuentoPorcentaje > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Descuento aplicado: {descuentoPorcentaje}%
+                    {calc.totalConDescuento && calc.totalConDescuento < calc.totalSinDescuento && (
+                      <span> - Ahorro: {formatCurrency(calc.totalSinDescuento - calc.totalConDescuento)}</span>
+                    )}
+                  </p>
+                )}
+              </div>
+              
+              <PriceBreakdown breakdown={calc.breakdown} total={calc.totalSinDescuento} costoLimpieza={calc.costoLimpieza} totalConDescuento={calc.totalConDescuento} descuentoPorcentaje={descuentoPorcentaje} />
             </>
           )}
 

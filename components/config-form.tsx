@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Upload, CheckCircle, AlertCircle, Database } from "lucide-react"
-import { processFile, type ExtractedReservationData } from "@/lib/pdf-processor"
-import { createReservation } from "@/app/actions"
+import { processExcelFile, type ProcessedReservationData } from "@/lib/excel-processor"
+import { migrateReservationsFromExcel } from "@/app/actions"
 
 export function ConfigForm() {
   const { state, guardarConfig } = useAtila()
@@ -17,7 +17,7 @@ export function ConfigForm() {
     "idle",
   )
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([])
-  const [extractedData, setExtractedData] = React.useState<ExtractedReservationData[]>([])
+  const [extractedData, setExtractedData] = React.useState<ProcessedReservationData[]>([])
   const [processingResults, setProcessingResults] = React.useState<string>("")
 
   React.useEffect(() => {
@@ -38,50 +38,54 @@ export function ConfigForm() {
     setProcessingResults("")
 
     try {
-      const allExtractedData: ExtractedReservationData[] = []
+      const allExtractedData: ProcessedReservationData[] = []
       let processedCount = 0
       let errorCount = 0
+      let savedCount = 0
 
       setUploadStatus("processing")
 
-      for (const file of files) {
+      // Process Excel files using the dedicated Excel processor
+      if (files.length > 0 && files[0].name.endsWith('.xlsx')) {
         try {
-          const result = await processFile(file)
-
-          if (result.success && result.data) {
-            allExtractedData.push(...result.data)
-            processedCount++
+          const processedData = await processExcelFile(files[0])
+          if (processedData && processedData.length > 0) {
+            allExtractedData.push(...processedData)
+            processedCount = 1 // Count as 1 file processed
           } else {
             errorCount++
-            console.error(`Error processing ${file.name}:`, result.error)
+            console.error(`No data found in ${files[0].name}`)
           }
         } catch (error) {
           errorCount++
-          console.error(`Error processing ${file.name}:`, error)
+          console.error(`Error processing ${files[0].name}:`, error)
         }
+      } else {
+        errorCount++
+        console.error(`Invalid file format. Please upload an .xlsx file.`)
       }
 
       if (allExtractedData.length > 0) {
         setExtractedData(allExtractedData)
 
-        // Save extracted reservations to database
-        let savedCount = 0
-        for (const reservation of allExtractedData) {
-          try {
-            const formData = new FormData()
-            formData.append("cliente", reservation.cliente)
-            formData.append("fecha", reservation.fecha)
-            formData.append("personas", reservation.personas.toString())
-            formData.append("extrasFijos", JSON.stringify([]))
-            formData.append("itemsPorCantidad", JSON.stringify([]))
-            formData.append("notas", reservation.notas || "Reserva migrada")
-            formData.append("tipo", "migrada")
-
-            await createReservation(formData)
-            savedCount++
-          } catch (error) {
-            console.error("Error saving reservation:", error)
+        // Use the dedicated Excel migration function
+        try {
+          const result = await migrateReservationsFromExcel(files[0])
+          if (result.migratedCount > 0) {
+            savedCount = result.migratedCount
+          } else {
+            errorCount++
+            console.error("Migration failed:", result.errors)
+            // Add error details to the processing results
+            if (result.errors && result.errors.length > 0) {
+              setProcessingResults(prev => prev + "\n\nErrores detallados:\n" + result.errors!.join("\n"))
+            }
           }
+        } catch (error) {
+          errorCount++
+          console.error("Error during migration:", error)
+          // Add error details to the processing results
+          setProcessingResults(prev => prev + "\n\nError crítico: " + (error instanceof Error ? error.message : "Error desconocido"))
         }
 
         setProcessingResults(
@@ -217,14 +221,21 @@ export function ConfigForm() {
           </div>
 
           <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
-            <p className="mb-1">
-              <strong>Formatos soportados:</strong>Excel (.xlsx, .xls)
+            <p className="mb-2">
+              <strong>Columnas esperadas en tu archivo Excel:</strong>
             </p>
-            <p className="mb-1">
-              <strong>Contenido esperado:</strong> Fechas, nombres de clientes, montos, cantidad de personas
-            </p>
-            <p>
-              <strong>Nota:</strong> Las reservas migradas aparecerán con un punto azul en el calendario
+            <ul className="list-disc list-inside mb-2 space-y-1">
+              <li><strong>Fecha:</strong> Fecha del evento (formato AAAA-MM-DD o DD/MM/AAAA)</li>
+              <li><strong>Evento o Nombre:</strong> Nombre del cliente o evento</li>
+              <li><strong>Cant Personas:</strong> Cantidad de personas</li>
+              <li><strong>Telefono:</strong> Número de teléfono</li>
+              <li><strong>Presupuesto:</strong> Monto total del evento</li>
+              <li><strong>Seña:</strong> Monto de la seña o depósito</li>
+              <li><strong>Saldo:</strong> Saldo restante por pagar</li>
+              <li><strong>Vajilla, Mesas, ETC:</strong> Detalles adicionales (se guardarán en notas)</li>
+            </ul>
+            <p className="text-xs">
+              <strong>Nota:</strong> El sistema buscará automáticamente estas columnas en tu archivo, sin importar el orden exacto.
             </p>
           </div>
         </CardContent>

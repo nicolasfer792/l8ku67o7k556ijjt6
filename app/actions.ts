@@ -4,6 +4,7 @@ import { getSupabaseServer } from "@/lib/supabase/server"
 import type { AppStateShape, Expense, PricingConfig, Reservation, DayStatus } from "@/lib/types"
 import { computeReservationTotal } from "@/lib/pricing"
 import { isWeekend, startOfMonth, endOfMonth, toISODate } from "@/lib/date-utils"
+import { processExcelFile, validateExcelData, type ProcessedReservationData } from "@/lib/excel-processor"
 
 // Helpers de mapeo entre DB y tipos
 function mapRowToReservation(row: any): Reservation {
@@ -28,14 +29,21 @@ function mapRowToReservation(row: any): Reservation {
     extrasFijosTotalFijo: Number(row.extras_fijos_total_fijo || 0),
     // Solo usar cantidades_total_fijo si la columna existe
     cantidadesTotalFijo: Number(row.cantidades_total_fijo ?? 0),
+    descuentoPorcentaje: Number(row.descuento_porcentaje ?? 0),
     telefono: row.telefono || undefined,
     // Campos para el estado de pago
     pagado: Number(row.pagado || 0),
     pagadoEn: row.pagado_en ?
       (Array.isArray(row.pagado_en) ?
-        row.pagado_en.map((p: any) => ({ fecha: p.fecha || p, monto: Number(p.monto || 0) })) :
+        row.pagado_en.map((p: any) => ({
+          fecha: p.fecha ? new Date(p.fecha + 'T00:00:00').toISOString().split('T')[0] : p.fecha,
+          monto: Number(p.monto || 0)
+        })) :
         typeof row.pagado_en === 'string' ?
-          JSON.parse(row.pagado_en).map((p: any) => ({ fecha: p.fecha || p, monto: Number(p.monto || 0) })) :
+          JSON.parse(row.pagado_en).map((p: any) => ({
+            fecha: p.fecha ? new Date(p.fecha + 'T00:00:00').toISOString().split('T')[0] : p.fecha,
+            monto: Number(p.monto || 0)
+          })) :
           []) :
       undefined
   }
@@ -218,6 +226,9 @@ export async function createReservation(
     notas = "Reserva migrada sin descripción original."
   }
 
+  // Extract descuentoPorcentaje from payload (works for both FormData and plain objects)
+  const descuentoPorcentaje = (formData as any).descuentoPorcentaje || 0
+
   const payload = {
     nombreCliente,
     telefono,
@@ -234,6 +245,7 @@ export async function createReservation(
     precioPorPersonaFijo,
     extrasFijosTotalFijo,
     cantidadesTotalFijo,
+    descuentoPorcentaje,
   }
 
   // Helper function to get pricing config
@@ -250,7 +262,10 @@ export async function createReservation(
   }
 
   const cfg = await getPricingConfig()
-  const calc = computeReservationTotal(payload, cfg)
+  const calc = computeReservationTotal({
+    ...payload,
+    descuentoPorcentaje: (payload as any).descuentoPorcentaje || 0
+  }, cfg)
   const reservationId = crypto.randomUUID()
 
   const reservationRow: any = {
@@ -340,7 +355,24 @@ export async function createReservation(
     console.log("Columna cantidades_total_fijo no encontrada, omitiendo...")
   }
 
-  const { data: savedReservation, error: resErr } = await supabase
+  // Agregar descuento_porcentaje si la columna existe en la BD
+  try {
+    // Intentamos seleccionar la columna para ver si existe (sin filtrar por id, ya que aún no insertamos)
+    const { error: testError } = await supabase
+      .from("reservations")
+      .select("descuento_porcentaje")
+      .limit(1)
+
+    if (!testError) {
+      // La columna existe, la incluimos en el insert
+      reservationRow.descuento_porcentaje = (payload as any).descuentoPorcentaje || 0
+    }
+  } catch (e) {
+    // La columna no existe, no la incluimos
+    console.log("Columna descuento_porcentaje no encontrada, omitiendo...")
+  }
+
+ const { data: savedReservation, error: resErr } = await supabase
     .from("reservations")
     .insert(reservationRow)
     .select("*")
@@ -511,6 +543,7 @@ export async function updateReservation(
     telefono?: string
     pagado?: number
     pagadoEn?: Array<{ fecha: string; monto: number }>
+    descuentoPorcentaje?: number
   }
  ) {
    const supabase = getSupabaseServer()
@@ -552,9 +585,15 @@ export async function updateReservation(
      precioPorPersonaFijo: data.precioPorPersonaFijo ?? currentReservation.precio_por_persona_fijo,
      extrasFijosTotalFijo: data.extrasFijosTotalFijo ?? currentReservation.extras_fijos_total_fijo,
      cantidadesTotalFijo: data.cantidadesTotalFijo ?? currentReservation.cantidades_total_fijo,
+     descuentoPorcentaje: data.descuentoPorcentaje ?? currentReservation.descuento_porcentaje,
    }
- 
-   const calc = computeReservationTotal(payload, cfg)
+
+   const descuentoPorcentajeValue = payload.descuentoPorcentaje
+
+   const calc = computeReservationTotal({
+     ...payload,
+     descuentoPorcentaje: descuentoPorcentajeValue
+   }, cfg)
  
    const updateData: any = {
      nombre_cliente: payload.nombreCliente,
@@ -658,6 +697,24 @@ export async function updateReservation(
      console.log("Columna cantidades_total_fijo no encontrada, omitiendo...")
    }
 
+   // Solo agregar descuento_porcentaje si la columna existe en la BD
+   try {
+     // Intentamos seleccionar la columna para ver si existe
+     const { data: testColumn, error: testError } = await supabase
+       .from("reservations")
+       .select("descuento_porcentaje")
+       .eq("id", id)
+       .limit(1)
+
+     if (!testError) {
+       // La columna existe, la incluimos
+       updateData.descuento_porcentaje = (payload as any).descuentoPorcentaje || 0
+     }
+   } catch (e) {
+     // La columna no existe, no la incluimos
+     console.log("Columna descuento_porcentaje no encontrada, omitiendo...")
+   }
+
   const { data: updatedReservation, error: updateErr } = await supabase
     .from("reservations")
     .update(updateData)
@@ -757,6 +814,94 @@ export async function listReservationsByMonthAction(yyyyMM: string, includeTrash
     throw new Error(`Error de DB al listar reservas: ${error.message}`)
   }
   return (data || []).map(mapRowToReservation)
+}
+
+export async function recalculateReservationTotals() {
+  const supabase = getSupabaseServer()
+
+  // Obtener todas las reservas activas
+  const { data: reservations, error } = await supabase
+    .from("reservations")
+    .select("*")
+    .neq("estado", "trashed")
+
+  if (error) {
+    console.error("Error al obtener reservas para recálculo:", error)
+    throw new Error(`Error al obtener reservas: ${error.message}`)
+  }
+
+  if (!reservations || reservations.length === 0) {
+    return { message: "No hay reservas para recalcular" }
+  }
+
+  // Cargar configuración actual
+  const { data: cfgRows, error: cfgErr } = await supabase
+    .from("pricing_config")
+    .select("*")
+    .eq("id", "singleton")
+    .limit(1)
+
+  if (cfgErr) {
+    throw new Error(`Error al cargar configuración: ${cfgErr.message}`)
+  }
+
+  const cfg = cfgRows?.[0] ? mapRowToConfig(cfgRows[0]) : undefined
+  if (!cfg) {
+    throw new Error("No hay configuración de precios disponible.")
+  }
+
+  let updatedCount = 0
+
+  for (const reservation of reservations) {
+    // Preparar payload para recálculo
+    const payload = {
+      nombreCliente: reservation.nombre_cliente,
+      telefono: reservation.telefono,
+      fecha: reservation.fecha,
+      cantidadPersonas: reservation.cantidad_personas,
+      extrasFijosSeleccionados: reservation.extras_fijos_seleccionados || [],
+      cantidades: reservation.cantidades || {},
+      estado: reservation.estado,
+      notas: reservation.notas,
+      tipo: reservation.tipo || "salon",
+      incluirLimpieza: reservation.incluir_limpieza || false,
+      costoLimpieza: reservation.costo_limpieza || 0,
+      precioBaseFijo: reservation.precio_base_fijo || 0,
+      precioPorPersonaFijo: reservation.precio_por_persona_fijo || 0,
+      extrasFijosTotalFijo: reservation.extras_fijos_total_fijo || 0,
+      cantidadesTotalFijo: reservation.cantidades_total_fijo || 0,
+      descuentoPorcentaje: reservation.descuento_porcentaje || 0,
+    }
+
+    // Recalcular total con descuento
+    const calc = computeReservationTotal(payload, cfg)
+
+    // Actualizar solo si el total cambió
+    if (calc.total !== reservation.total) {
+      const { error: updateErr } = await supabase
+        .from("reservations")
+        .update({
+          total: calc.total,
+          precio_base_fijo: calc.breakdown.base,
+          precio_por_persona_fijo: calc.breakdown.perPerson,
+          extras_fijos_total_fijo: calc.breakdown.extrasFijosTotal,
+          cantidades_total_fijo: calc.breakdown.cantidadesTotal,
+          costo_limpieza: calc.costoLimpieza,
+        })
+        .eq("id", reservation.id)
+
+      if (updateErr) {
+        console.error(`Error al actualizar reserva ${reservation.id}:`, updateErr)
+      } else {
+        updatedCount++
+      }
+    }
+  }
+
+  return {
+    message: `Recálculo completado. ${updatedCount} reservas actualizadas.`,
+    updatedCount
+  }
 }
 
 export async function migrateReservationsToFixedPrices() {
@@ -867,4 +1012,139 @@ export async function listTrashedReservationsAction() {
     return data ? mapRowToReservation(data) : null
   }
   return (data || []).map(mapRowToReservation)
+}
+
+export async function migrateReservationsFromExcel(file: File) {
+  "use server"
+  
+  const supabase = getSupabaseServer()
+  
+  console.log(`Iniciando migración desde archivo: ${file.name}`)
+  console.log(`Tamaño del archivo: ${file.size} bytes`)
+  
+  try {
+    // Procesar el archivo Excel
+    console.log("Procesando archivo Excel...")
+    const processedData = await processExcelFile(file)
+    console.log(`Datos procesados: ${processedData.length} reservas encontradas`)
+    
+    // Validar los datos procesados
+    const validation = validateExcelData(processedData)
+    if (!validation.valid) {
+      throw new Error(`Datos inválidos: ${validation.errors.join(', ')}`)
+    }
+    
+    // Cargar configuración actual para obtener precios de items
+    console.log("Cargando configuración de precios...")
+    const { data: cfgRows, error: cfgErr } = await supabase
+      .from("pricing_config")
+      .select("*")
+      .eq("id", "singleton")
+      .limit(1)
+      
+    if (cfgErr) {
+      console.error("Error al cargar configuración:", cfgErr)
+      throw new Error(`Error al cargar configuración: ${cfgErr.message}`)
+    }
+    
+    const cfg = cfgRows?.[0] ? mapRowToConfig(cfgRows[0]) : undefined
+    if (!cfg) {
+      throw new Error("No hay configuración de precios disponible.")
+    }
+    
+    console.log("Configuración cargada exitosamente")
+    
+    let migratedCount = 0
+    const errors: string[] = []
+    
+    // Procesar cada reserva
+    for (const data of processedData) {
+      try {
+        // Mapear los items por cantidad a precios fijos actuales
+        const cantidadesWithPrices = Object.entries(data.cantidades).reduce((acc, [id, qtyData]) => {
+          const item = cfg.itemsPorCantidad.find(item => item.id === id)
+          if (item) {
+            acc[id] = {
+              cantidad: qtyData.cantidad,
+              precioUnitarioFijo: item.precioUnitario
+            }
+          }
+          return acc
+        }, {} as Record<string, { cantidad: number; precioUnitarioFijo: number }>)
+        
+        // Preparar payload para la reserva
+        const payload = {
+          nombreCliente: data.nombreCliente,
+          telefono: data.telefono,
+          fecha: data.fecha,
+          cantidadPersonas: data.cantidadPersonas,
+          extrasFijosSeleccionados: data.extrasFijosSeleccionados,
+          cantidades: cantidadesWithPrices,
+          estado: data.estado,
+          notas: data.notas,
+          tipo: "migrada" as const,
+          incluirLimpieza: false, // Por defecto, se puede ajustar según necesidad
+          costoLimpieza: 0,
+          precioBaseFijo: 0,
+          precioPorPersonaFijo: 0,
+          extrasFijosTotalFijo: 0,
+          cantidadesTotalFijo: 0,
+        }
+        
+        // Calcular total usando la función existente
+        const calc = computeReservationTotal(payload, cfg)
+        
+        // Crear la reserva en la base de datos
+        const reservationRow: any = {
+          id: crypto.randomUUID(),
+          nombre_cliente: payload.nombreCliente,
+          telefono: payload.telefono,
+          fecha: payload.fecha,
+          cantidad_personas: payload.cantidadPersonas,
+          extras_fijos_seleccionados: payload.extrasFijosSeleccionados,
+          cantidades: payload.cantidades,
+          estado: payload.estado,
+          es_fin_de_semana: calc.esFinDeSemana,
+          total: calc.total,
+          creado_en: new Date().toISOString(),
+          notas: payload.notas ?? null,
+          deleted_at: null,
+          tipo: payload.tipo,
+          incluir_limpieza: payload.incluirLimpieza,
+          costo_limpieza: calc.costoLimpieza,
+          pagado: data.saldo, // Usar el saldo como monto pagado
+        }
+        
+        // Insertar la reserva
+        console.log(`Intentando insertar reserva: ${data.nombreCliente} para la fecha: ${data.fecha}`)
+        console.log('Datos de la reserva:', reservationRow)
+        
+        const { error: insertErr } = await supabase
+          .from("reservations")
+          .insert(reservationRow)
+          
+        if (insertErr) {
+          console.error(`Error al insertar reserva ${data.nombreCliente}:`, insertErr)
+          throw new Error(`Error al insertar reserva ${data.nombreCliente}: ${insertErr.message} (Código: ${insertErr.code})`)
+        }
+        
+        console.log(`Reserva ${data.nombreCliente} insertada exitosamente`)
+        
+        migratedCount++
+        
+      } catch (error) {
+        errors.push(`Error al procesar ${data.nombreCliente}: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      }
+    }
+    
+    return {
+      message: `Migración completada. ${migratedCount} reservas importadas con éxito.`,
+      migratedCount,
+      errors: errors.length > 0 ? errors : undefined
+    }
+    
+  } catch (error) {
+    console.error('Error en migración desde Excel:', error)
+    throw new Error(`Error durante la migración: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+  }
 }

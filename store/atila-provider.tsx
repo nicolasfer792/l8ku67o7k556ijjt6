@@ -16,6 +16,7 @@ import {
   updateReservation,
   deleteReservationPermanentlyAction, // Declaración de la variable
   deleteExpenseAction, // Declaración de la variable
+  recalculateReservationTotals,
 } from "@/app/actions"
 import { toast } from "@/hooks/use-toast"
 
@@ -28,6 +29,7 @@ type Ctx = {
       precioPorPersonaFijo: number
       extrasFijosTotalFijo: number
       cantidadesTotalFijo: number
+      descuentoPorcentaje?: number
     },
   ) => Promise<Reservation>
   actualizarEstadoDia: (fechaISO: string, estado: DayStatus) => Promise<void>
@@ -38,6 +40,7 @@ type Ctx = {
       precioPorPersonaFijo: number
       extrasFijosTotalFijo: number
       cantidadesTotalFijo: number
+      descuentoPorcentaje?: number
     },
   ) => Promise<Reservation>
   enviarReservaAPapelera: (id: string) => Promise<void> // Nueva
@@ -109,6 +112,7 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
         precioPorPersonaFijo: payload.precioPorPersonaFijo,
         extrasFijosTotalFijo: payload.extrasFijosTotalFijo,
         cantidadesTotalFijo: payload.cantidadesTotalFijo,
+        descuentoPorcentaje: (payload as any).descuentoPorcentaje || 0,
       })
       // Después de crear la reserva (y su gasto de limpieza asociado),
       // refrescamos todo el estado para que los gráficos se actualicen con los nuevos gastos.
@@ -147,6 +151,7 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
         precioPorPersonaFijo: payload.precioPorPersonaFijo,
         extrasFijosTotalFijo: payload.extrasFijosTotalFijo,
         cantidadesTotalFijo: payload.cantidadesTotalFijo,
+        descuentoPorcentaje: (payload as any).descuentoPorcentaje,
       })
       await refresh() // Refresh all data to ensure consistency
       toast({ title: "Reserva actualizada", description: `Total: ${updated.total.toLocaleString("es-AR")}` })
@@ -184,6 +189,7 @@ export function AtilaProvider({ children }: { children: React.ReactNode }) {
     await purgeOldTrashedReservationsAction()
     toast({ title: "Papelera limpiada", description: "Reservas antiguas eliminadas." })
   }
+
 
   const guardarConfig: Ctx["guardarConfig"] = async (cfg) => {
     try {

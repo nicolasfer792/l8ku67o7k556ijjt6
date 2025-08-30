@@ -50,6 +50,9 @@ export type Reservation = {
     fecha: string
     monto: number
   }> // Registro de pagos con fecha y monto
+  // Campos para descuentos
+  descuentoPorcentaje?: number // Porcentaje de descuento aplicado (0-100)
+  totalConDescuento?: number // Total final con descuento aplicado
 }
 
 export type Expense = {
