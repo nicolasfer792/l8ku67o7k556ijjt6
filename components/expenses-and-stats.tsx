@@ -181,22 +181,23 @@ export function ExpensesAndStats() {
                 {/* La línea de "Pérdida" se ha eliminado */}
               </LineChart>
             </ResponsiveContainer>
-            {/* Financial Summary */}
-            <div className="mt-6 space-y-3 animate-staggered-fade-in delay-700">
-              <h3 className="text-lg font-semibold text-slate-800">Resumen del Período</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex flex-col items-center justify-center rounded-lg bg-green-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
-                  <span className="text-sm font-medium text-green-700">Ingresos Totales</span>
-                  <span className="text-xl font-bold text-green-800 animate-pulse-text">{formatCurrency(totals.ingresos)}</span>
-                </div>
-                <div className="flex flex-col items-center justify-center rounded-lg bg-orange-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
-                  <span className="text-sm font-medium text-orange-700">Gastos Totales</span>
-                  <span className="text-xl font-bold text-orange-800 animate-pulse-text">{formatCurrency(totals.gastos)}</span>
-                </div>
-                <div className="flex flex-col items-center justify-center rounded-lg bg-teal-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
-                  <span className="text-sm font-medium text-teal-700">Ganancia Neta</span>
-                  <span className="text-xl font-bold text-teal-800 animate-pulse-text">{formatCurrency(totals.ganancia - totals.perdida)}</span>
-                </div>
+          </div>
+
+          {/* Financial Summary - moved outside fixed-height container to avoid overflow */}
+          <div className="mt-6 space-y-3 animate-staggered-fade-in delay-700">
+            <h3 className="text-lg font-semibold text-slate-800">Resumen del Período</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex flex-col items-center justify-center rounded-lg bg-green-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
+                <span className="text-sm font-medium text-green-700">Ingresos Totales</span>
+                <span className="text-xl font-bold text-green-800 animate-pulse-text">{formatCurrency(totals.ingresos)}</span>
+              </div>
+              <div className="flex flex-col items-center justify-center rounded-lg bg-orange-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
+                <span className="text-sm font-medium text-orange-700">Gastos Totales</span>
+                <span className="text-xl font-bold text-orange-800 animate-pulse-text">{formatCurrency(totals.gastos)}</span>
+              </div>
+              <div className="flex flex-col items-center justify-center rounded-lg bg-teal-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
+                <span className="text-sm font-medium text-teal-700">Ganancia Neta</span>
+                <span className="text-xl font-bold text-teal-800 animate-pulse-text">{formatCurrency(totals.ganancia - totals.perdida)}</span>
               </div>
             </div>
           </div>
