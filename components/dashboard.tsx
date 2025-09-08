@@ -39,10 +39,14 @@ export function Dashboard() {
               <p className="text-slate-600 font-body text-sm sm:text-base font-medium">Sistema de gestión de eventos</p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6 animate-slide-in-right">
-            <DateSearch />
-            <NotificationBell />
-            <div className="status-indicator bg-green-50 border border-green-200 rounded-xl px-4 py-2">
+          <div className="flex items-center gap-3 flex-wrap animate-slide-in-right">
+            <div className="flex-1 min-w-[180px] max-w-[75vw]">
+              <DateSearch />
+            </div>
+            <div className="flex-shrink-0">
+              <NotificationBell />
+            </div>
+            <div className="status-indicator bg-green-50 border border-green-200 rounded-xl px-3 py-1.5 flex-shrink-0">
               <div className="status-dot animate-pulse-dot bg-green-500"></div>
               <span className="text-sm sm:text-base font-medium text-green-700">Sistema Activo</span>
             </div>
