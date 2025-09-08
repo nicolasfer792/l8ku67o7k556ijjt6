@@ -1072,7 +1072,7 @@ export async function migrateReservationsFromExcel(file: File) {
           return acc
         }, {} as Record<string, { cantidad: number; precioUnitarioFijo: number }>)
         
-        // Preparar payload para la reserva
+        // Preparar payload para la reserva (usando la mayor cantidad de datos disponibles)
         const payload = {
           nombreCliente: data.nombreCliente,
           telefono: data.telefono,
@@ -1082,13 +1082,14 @@ export async function migrateReservationsFromExcel(file: File) {
           cantidades: cantidadesWithPrices,
           estado: data.estado,
           notas: data.notas,
-          tipo: "migrada" as const,
-          incluirLimpieza: false, // Por defecto, se puede ajustar según necesidad
-          costoLimpieza: 0,
-          precioBaseFijo: 0,
-          precioPorPersonaFijo: 0,
-          extrasFijosTotalFijo: 0,
-          cantidadesTotalFijo: 0,
+          tipo: (data.tipo as any) || "migrada",
+          incluirLimpieza: data.incluirLimpieza ?? false,
+          costoLimpieza: data.costoLimpieza ?? 0,
+          precioBaseFijo: data.precioBaseFijo ?? 0,
+          precioPorPersonaFijo: data.precioPorPersonaFijo ?? 0,
+          extrasFijosTotalFijo: data.extrasFijosTotalFijo ?? 0,
+          cantidadesTotalFijo: data.cantidadesTotalFijo ?? 0,
+          descuentoPorcentaje: data.descuentoPorcentaje ?? 0,
         }
         
         // Calcular total usando la función existente
@@ -1112,7 +1113,12 @@ export async function migrateReservationsFromExcel(file: File) {
           tipo: payload.tipo,
           incluir_limpieza: payload.incluirLimpieza,
           costo_limpieza: calc.costoLimpieza,
-          pagado: data.saldo, // Usar el saldo como monto pagado
+          // Preferir 'pagado' si viene explícito; si no, usar 'saldo' como fallback
+          pagado: (data.pagado ?? data.saldo) || 0,
+          // Intentar guardar el historial de pagos si está disponible
+          pagado_en: data.pagadoEn ?? undefined,
+          // Guardar el porcentaje de descuento si existe la columna (la mayoría de BDs ya lo tienen)
+          descuento_porcentaje: data.descuentoPorcentaje ?? 0,
         }
         
         // Insertar la reserva

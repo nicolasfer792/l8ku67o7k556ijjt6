@@ -288,7 +288,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
               {/* Quantity Items */}
               <div className="space-y-3 animate-staggered-fade-in delay-900">
                 <Label className="text-sm font-semibold text-gray-700">Ítems por cantidad</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
                   {state.config.itemsPorCantidad.map((it, index) => (
                     <div
                       key={it.id}

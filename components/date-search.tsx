@@ -1,12 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { useAtila } from "@/store/atila-provider"
 
 export function DateSearch() {
   const { state } = useAtila()
   const [searchDate, setSearchDate] = useState<string>("")
   const [searchResult, setSearchResult] = useState<{status: string, message: string} | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,12 +28,38 @@ export function DateSearch() {
       <form onSubmit={handleSearch} className="flex items-center gap-2">
         <div className="relative flex-grow">
           <input
-        type="date"
+            ref={inputRef}
+            type="date"
             value={searchDate}
             onChange={(e) => setSearchDate(e.target.value)}
-            className="pl-8 pr-10 py-1 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-sm w-full"
+            className="pl-8 pr-12 py-1 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-sm w-full date-input-hide-native"
           />
-          <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400">
+          {/* Custom right calendar trigger for consistent right-edge icon */}
+          <div
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-600 transition-colors cursor-pointer"
+            onClick={() => {
+              try {
+                (inputRef.current as any)?.showPicker?.()
+              } catch {
+                inputRef.current?.focus()
+                inputRef.current?.click()
+              }
+            }}
+            aria-label="Abrir selector de fecha"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                try {
+                  (inputRef.current as any)?.showPicker?.()
+                } catch {
+                  inputRef.current?.focus()
+                  inputRef.current?.click()
+                }
+              }
+            }}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>

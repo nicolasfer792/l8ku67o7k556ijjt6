@@ -335,3 +335,18 @@
   0%, 100% { box-shadow: 0 0 5px rgba(20, 184, 166, 0.5); }
   50% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.8), 0 0 30px rgba(20, 184, 166, 0.4); }
 }
+
+/* Custom date input: hide native right-side indicator so our custom icon aligns properly */
+.date-input-hide-native {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.date-input-hide-native::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+}
+.date-input-hide-native::-webkit-inner-spin-button,
+.date-input-hide-native::-webkit-clear-button {
+  display: none;
+}

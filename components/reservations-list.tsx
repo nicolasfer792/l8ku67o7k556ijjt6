@@ -7,10 +7,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useAtila } from "@/store/atila-provider"
 import { formatCurrency } from "@/lib/date-utils"
 import { Trash2, ChevronDown } from "lucide-react"
+import { ReservationDetailsDialog } from "./reservation-details-dialog"
 
 export function ReservationsList() {
-  const { state, enviarReservaAPapelera } = useAtila()
+  const { state, enviarReservaAPapelera, reservasPorFecha } = useAtila()
   const [isOpen, setIsOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedDateForDialog, setSelectedDateForDialog] = useState<string>("")
   const byDate = [...state.reservas].sort((a, b) => {
     const dateA = new Date(a.fecha)
     const dateB = new Date(b.fecha)
@@ -26,7 +29,7 @@ export function ReservationsList() {
   const remainingReservations = byDate.slice(5)
 
   return (
-    <Card className="w-full border-0 shadow-xl bg-gradient-to-br from-white/95 via-white/90 to-white/95 backdrop-blur-xl">
+    <><Card className="w-full border-0 shadow-xl bg-gradient-to-br from-white/95 via-white/90 to-white/95 backdrop-blur-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-6">
         <CardTitle className="text-xl sm:text-2xl font-bold">
           <span className="bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
@@ -37,7 +40,7 @@ export function ReservationsList() {
       <CardContent className="space-y-3">
         {byDate.length === 0 && <div className="text-sm text-muted-foreground">Sin reservas aún.</div>}
         {initialReservations.map((r, index) => (
-          <div key={r.id} className="flex flex-col sm:flex-row gap-3 sm:items-center border-2 border-gray-100 rounded-xl p-4 bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-teal-200 hover:bg-white/80 hover:shadow-lg animate-staggered-fade-in hover-lift group" style={{ animationDelay: `${index * 50}ms` }}>
+          <div key={r.id} onClick={() => { setSelectedDateForDialog(r.fecha); setDialogOpen(true); }} className="cursor-pointer flex flex-col sm:flex-row gap-3 sm:items-center border-2 border-gray-100 rounded-xl p-4 bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-teal-200 hover:bg-white/80 hover:shadow-lg animate-staggered-fade-in hover-lift group" style={{ animationDelay: `${index * 50}ms` }}>
             <div className="flex-1">
               <div className="font-semibold text-lg text-gray-800 mb-1">{r.nombreCliente}</div>
               <div className="flex flex-wrap gap-2 text-sm text-gray-600">
@@ -76,7 +79,7 @@ export function ReservationsList() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => enviarReservaAPapelera(r.id)}
+              onClick={(e) => { e.stopPropagation(); enviarReservaAPapelera(r.id) }}
               aria-label="Eliminar"
               className="h-12 w-12 rounded-xl transition-all duration-300 hover:scale-110 hover:bg-red-50 hover:text-red-600 hover:border-red-200 border-2 border-transparent group-hover:border-red-200"
             >
@@ -95,7 +98,7 @@ export function ReservationsList() {
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-2">
               {remainingReservations.map((r, index) => (
-                <div key={r.id} className="flex flex-col sm:flex-row gap-3 sm:items-center border-2 border-gray-100 rounded-xl p-4 bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-teal-200 hover:bg-white/80 hover:shadow-lg animate-staggered-fade-in hover-lift group" style={{ animationDelay: `${(index + 5) * 50}ms` }}>
+                <div key={r.id} onClick={() => { setSelectedDateForDialog(r.fecha); setDialogOpen(true); }} className="cursor-pointer flex flex-col sm:flex-row gap-3 sm:items-center border-2 border-gray-100 rounded-xl p-4 bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-teal-200 hover:bg-white/80 hover:shadow-lg animate-staggered-fade-in hover-lift group" style={{ animationDelay: `${(index + 5) * 50}ms` }}>
                   <div className="flex-1">
                     <div className="font-semibold text-lg text-gray-800 mb-1">{r.nombreCliente}</div>
                     <div className="flex flex-wrap gap-2 text-sm text-gray-600">
@@ -134,7 +137,7 @@ export function ReservationsList() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => enviarReservaAPapelera(r.id)}
+                    onClick={(e) => { e.stopPropagation(); enviarReservaAPapelera(r.id) }}
                     aria-label="Eliminar"
                     className="h-12 w-12 rounded-xl transition-all duration-300 hover:scale-110 hover:bg-red-50 hover:text-red-600 hover:border-red-200 border-2 border-transparent group-hover:border-red-200"
                   >
@@ -147,5 +150,12 @@ export function ReservationsList() {
         )}
       </CardContent>
     </Card>
+      <ReservationDetailsDialog
+        date={selectedDateForDialog}
+        reservations={selectedDateForDialog ? reservasPorFecha(selectedDateForDialog) : []}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
+    </>
   )
 }

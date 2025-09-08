@@ -215,7 +215,7 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
               </div>
               <div className="space-y-2">
                 <Label>Ítems por cantidad</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid gap-2 grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
                   {state.config.itemsPorCantidad.map((it) => (
                     <div key={it.id} className="rounded-md border p-2">
                       <div className="text-sm font-medium">{it.nombre}</div>
@@ -226,7 +226,7 @@ export function EditReservationForm({ reservation, onEdited, onCancel }: Props) 
                         className="mt-2"
                         type="number"
                         min={0}
-                        value={typeof cantidades[it.id] === 'number' ? cantidades[it.id] : (typeof cantidades[it.id] === 'object' ? cantidades[it.id].cantidad : 0)}
+                        value={(() => { const v: any = cantidades[it.id]; return typeof v === 'object' && v !== null ? v.cantidad : Number(v || 0) })()}
                         onChange={(e) => {
                           const newValue = Number(e.target.value)
                           setCantidades((s) => ({

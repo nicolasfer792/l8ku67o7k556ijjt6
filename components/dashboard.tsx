@@ -13,6 +13,7 @@ import { DateSearch } from "./date-search"
 import { Calendar, Trash2, Settings, BarChart3 } from "lucide-react"
 import { useAtila } from "@/store/atila-provider"
 import type { Reservation } from "@/lib/types"
+import { NotificationBell } from "./notification-bell"
 
 export function Dashboard() {
   const [selectedDate, setSelectedDate] = React.useState<string>("")
@@ -40,6 +41,7 @@ export function Dashboard() {
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6 animate-slide-in-right">
             <DateSearch />
+            <NotificationBell />
             <div className="status-indicator bg-green-50 border border-green-200 rounded-xl px-4 py-2">
               <div className="status-dot animate-pulse-dot bg-green-500"></div>
               <span className="text-sm sm:text-base font-medium text-green-700">Sistema Activo</span>
