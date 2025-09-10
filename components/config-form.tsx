@@ -152,99 +152,6 @@ export function ConfigForm() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Card className="w-full hover-lift">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-teal-700 animate-slide-in-left">
-            <Database className="h-5 w-5" />
-            <span>Migración de datos</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-slate-600 animate-staggered-fade-in">
-            Sube tus archivos Excel de balances anteriores para importar datos históricos de reservas y finanzas.
-          </p>
-
-          <div
-            className="upload-area p-8 text-center cursor-pointer animate-staggered-fade-in delay-100"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => document.getElementById("file-upload")?.click()}
-          >
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf,.xlsx,.xls"
-              multiple
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-
-            {uploadStatus === "idle" && (
-              <>
-                <Upload className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-                <p className="text-lg font-medium text-slate-700 mb-2">
-                  Arrastra tus archivos aquí o haz clic para seleccionar
-                </p>
-                <p className="text-sm text-slate-500">Soporta Excel con balances de reservas</p>
-              </>
-            )}
-
-            {uploadStatus === "uploading" && (
-              <>
-                <div className="animate-spin h-12 w-12 mx-auto mb-4 border-4 border-teal-500 border-t-transparent rounded-full"></div>
-                <p className="text-lg font-medium text-slate-700 mb-2">Subiendo archivos...</p>
-                <p className="text-sm text-slate-500">{uploadedFiles.length} archivo(s) seleccionado(s)</p>
-              </>
-            )}
-
-            {uploadStatus === "processing" && (
-              <>
-                <div className="animate-pulse h-12 w-12 mx-auto mb-4 bg-teal-500 rounded-full"></div>
-                <p className="text-lg font-medium text-slate-700 mb-2">Extrayendo datos...</p>
-                <p className="text-sm text-slate-500">Analizando contenido y guardando reservas</p>
-              </>
-            )}
-
-            {uploadStatus === "success" && (
-              <>
-                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                <p className="text-lg font-medium text-green-700 mb-2">¡Migración completada!</p>
-                <pre className="text-xs text-green-600 bg-green-50 p-2 rounded mt-2 whitespace-pre-wrap">
-                  {processingResults}
-                </pre>
-              </>
-            )}
-
-            {uploadStatus === "error" && (
-              <>
-                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
-                <p className="text-lg font-medium text-red-700 mb-2">Error en la migración</p>
-                <p className="text-xs text-red-600 bg-red-50 p-2 rounded mt-2">{processingResults}</p>
-              </>
-            )}
-          </div>
-
-          <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
-            <p className="mb-2">
-              <strong>Columnas esperadas en tu archivo Excel:</strong>
-            </p>
-            <ul className="list-disc list-inside mb-2 space-y-1">
-              <li><strong>Fecha:</strong> Fecha del evento (formato AAAA-MM-DD o DD/MM/AAAA)</li>
-              <li><strong>Evento o Nombre:</strong> Nombre del cliente o evento</li>
-              <li><strong>Cant Personas:</strong> Cantidad de personas</li>
-              <li><strong>Telefono:</strong> Número de teléfono</li>
-              <li><strong>Presupuesto:</strong> Monto total del evento</li>
-              <li><strong>Seña:</strong> Monto de la seña o depósito</li>
-              <li><strong>Saldo:</strong> Saldo restante por pagar</li>
-              <li><strong>Vajilla, Mesas, ETC:</strong> Detalles adicionales (se guardarán en notas)</li>
-            </ul>
-            <p className="text-xs">
-              <strong>Nota:</strong> El sistema buscará automáticamente estas columnas en tu archivo, sin importar el orden exacto.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       <Card className="w-full hover-lift">
         <CardHeader>
@@ -469,6 +376,100 @@ export function ConfigForm() {
                     />
                     <Label htmlFor="showCostoExtra" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">Costo extra</Label>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+      
+            <Card className="w-full hover-lift">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-teal-700 animate-slide-in-left">
+                  <Database className="h-5 w-5" />
+                  <span>Migración de datos</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600 animate-staggered-fade-in">
+                  Sube tus archivos Excel de balances anteriores para importar datos históricos de reservas y finanzas.
+                </p>
+      
+                <div
+                  className="upload-area p-8 text-center cursor-pointer animate-staggered-fade-in delay-100"
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => document.getElementById("file-upload")?.click()}
+                >
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept=".pdf,.xlsx,.xls"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+      
+                  {uploadStatus === "idle" && (
+                    <>
+                      <Upload className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+                      <p className="text-lg font-medium text-slate-700 mb-2">
+                        Arrastra tus archivos aquí o haz clic para seleccionar
+                      </p>
+                      <p className="text-sm text-slate-500">Soporta Excel con balances de reservas</p>
+                    </>
+                  )}
+      
+                  {uploadStatus === "uploading" && (
+                    <>
+                      <div className="animate-spin h-12 w-12 mx-auto mb-4 border-4 border-teal-500 border-t-transparent rounded-full"></div>
+                      <p className="text-lg font-medium text-slate-700 mb-2">Subiendo archivos...</p>
+                      <p className="text-sm text-slate-500">{uploadedFiles.length} archivo(s) seleccionado(s)</p>
+                    </>
+                  )}
+      
+                  {uploadStatus === "processing" && (
+                    <>
+                      <div className="animate-pulse h-12 w-12 mx-auto mb-4 bg-teal-500 rounded-full"></div>
+                      <p className="text-lg font-medium text-slate-700 mb-2">Extrayendo datos...</p>
+                      <p className="text-sm text-slate-500">Analizando contenido y guardando reservas</p>
+                    </>
+                  )}
+      
+                  {uploadStatus === "success" && (
+                    <>
+                      <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                      <p className="text-lg font-medium text-green-700 mb-2">¡Migración completada!</p>
+                      <pre className="text-xs text-green-600 bg-green-50 p-2 rounded mt-2 whitespace-pre-wrap">
+                        {processingResults}
+                      </pre>
+                    </>
+                  )}
+      
+                  {uploadStatus === "error" && (
+                    <>
+                      <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+                      <p className="text-lg font-medium text-red-700 mb-2">Error en la migración</p>
+                      <p className="text-xs text-red-600 bg-red-50 p-2 rounded mt-2">{processingResults}</p>
+                    </>
+                  )}
+                </div>
+      
+                <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
+                  <p className="mb-2">
+                    <strong>Columnas esperadas en tu archivo Excel:</strong>
+                  </p>
+                  <ul className="list-disc list-inside mb-2 space-y-1">
+                    <li><strong>Fecha:</strong> Fecha del evento (formato AAAA-MM-DD o DD/MM/AAAA)</li>
+                    <li><strong>Evento o Nombre:</strong> Nombre del cliente o evento</li>
+                    <li><strong>Cant Personas:</strong> Cantidad de personas</li>
+                    <li><strong>Telefono:</strong> Número de teléfono</li>
+                    <li><strong>Presupuesto:</strong> Monto total del evento</li>
+                    <li><strong>Seña:</strong> Monto de la seña o depósito</li>
+                    <li><strong>Saldo:</strong> Saldo restante por pagar</li>
+                    <li><strong>Vajilla, Mesas, ETC:</strong> Detalles adicionales (se guardarán en notas)</li>
+                  </ul>
+                  <p className="text-xs">
+                    <strong>Nota:</strong> El sistema buscará automáticamente estas columnas en tu archivo, sin importar el orden exacto.
+                  </p>
                 </div>
               </CardContent>
             </Card>
