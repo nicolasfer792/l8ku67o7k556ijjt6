@@ -13,6 +13,7 @@ import { PriceBreakdown } from "./price-breakdown"
 import type { DayStatus } from "@/lib/types"
 import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
+import { User, Phone, Calendar as CalendarIcon, Users, Plus, Minus } from "lucide-react"
 
 type Props = {
   defaultDate?: string
@@ -33,7 +34,11 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
   const [notas, setNotas] = React.useState("") // Nuevo estado para notas
   const [telefono, setTelefono] = React.useState("") // Nuevo estado para teléfono
   const [descuentoPorcentaje, setDescuentoPorcentaje] = React.useState(0) // Estado para descuento
+  const [costoExtra, setCostoExtra] = React.useState(0) // Estado para costo extra
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [touched, setTouched] = React.useState({ nombre: false, fecha: false })
+  const showNombreError = touched.nombre && !nombre
+  const showFechaError = touched.fecha && !fecha
 
   React.useEffect(() => {
     setFecha(defaultDate || "")
@@ -52,6 +57,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
       incluirLimpieza,
       costoLimpieza,
       descuentoPorcentaje: descuentoPorcentaje || 0,
+      costoExtra: costoExtra || 0,
     },
     state.config,
   )
@@ -95,6 +101,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
         extrasFijosTotalFijo: calc.breakdown.extrasFijosTotal,
         cantidadesTotalFijo: calc.breakdown.cantidadesTotal,
         descuentoPorcentaje: descuentoPorcentaje || 0,
+        costoExtra: costoExtra || 0,
       })
       onCreated && onCreated(nuevo.id)
       // reset básico
@@ -107,6 +114,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
       setCantidades({})
       setNotas("") // Resetear notas
       setDescuentoPorcentaje(0) // Resetear descuento
+      setCostoExtra(0) // Resetear costo extra
     } catch (error: any) {
       toast({
         title: "Error al crear reserva",
@@ -132,46 +140,78 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="animate-staggered-fade-in group">
               <Label htmlFor="nombre" className="text-sm font-semibold text-gray-700 mb-2 block">Nombre</Label>
-              <Input
-                id="nombre"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Nombre del cliente"
-                required
-                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
-              />
+              <div className="relative">
+                <span className="input-icon">
+                  <User className="h-4 w-4" />
+                </span>
+                <Input
+                  id="nombre"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, nombre: true }))}
+                  placeholder="Nombre del cliente"
+                  required
+                  aria-invalid={showNombreError ? true : false}
+                  aria-describedby="nombre-error"
+                  className={`h-12 px-4 border-2 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md input-with-icon ${showNombreError ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-teal-500"}`}
+                />
+              </div>
+              {showNombreError && (
+                <p id="nombre-error" className="form-error">El nombre es obligatorio.</p>
+              )}
             </div>
             <div className="animate-staggered-fade-in delay-100 group">
               <Label htmlFor="telefono" className="text-sm font-semibold text-gray-700 mb-2 block">Teléfono</Label>
-              <Input
-                id="telefono"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                placeholder="Número de teléfono"
-                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
-              />
+              <div className="relative">
+                <span className="input-icon">
+                  <Phone className="h-4 w-4" />
+                </span>
+                <Input
+                  id="telefono"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                  placeholder="Número de teléfono"
+                  className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md input-with-icon"
+                />
+              </div>
             </div>
             <div className="animate-staggered-fade-in delay-200 group">
               <Label htmlFor="fecha" className="text-sm font-semibold text-gray-700 mb-2 block">Fecha</Label>
-              <Input
-                id="fecha"
-                type="date"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-                required
-                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
-              />
+              <div className="relative">
+                <span className="input-icon">
+                  <CalendarIcon className="h-4 w-4" />
+                </span>
+                <Input
+                  id="fecha"
+                  type="date"
+                  value={fecha}
+                  onChange={(e) => setFecha(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, fecha: true }))}
+                  required
+                  aria-invalid={showFechaError ? true : false}
+                  aria-describedby="fecha-error"
+                  className={`h-12 px-4 border-2 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md input-with-icon ${showFechaError ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-teal-500"}`}
+                />
+              </div>
+              {showFechaError && (
+                <p id="fecha-error" className="form-error">La fecha es obligatoria.</p>
+              )}
             </div>
             <div className="animate-staggered-fade-in delay-300 group">
               <Label htmlFor="personas" className="text-sm font-semibold text-gray-700 mb-2 block">Cantidad de personas</Label>
-              <Input
-                id="personas"
-                type="number"
-                min={0}
-                value={personas}
-                onChange={(e) => setPersonas(Number(e.target.value))}
-                className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md"
-              />
+              <div className="relative">
+                <span className="input-icon">
+                  <Users className="h-4 w-4" />
+                </span>
+                <Input
+                  id="personas"
+                  type="number"
+                  min={0}
+                  value={personas}
+                  onChange={(e) => setPersonas(Number(e.target.value))}
+                  className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg group-hover:shadow-md input-with-icon"
+                />
+              </div>
             </div>
             <div className="animate-staggered-fade-in delay-400 group sm:col-span-2">
               <Label className="text-sm font-semibold text-gray-700 mb-2 block">Estado</Label>
@@ -225,39 +265,41 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                 />
               </div>
 
-              <div className="space-y-3 animate-staggered-fade-in delay-700">
-                <Label className="text-sm font-semibold text-gray-700">Servicios extras (precio fijo)</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {state.config.extrasFijos.map((ex, index) => {
-                    const checked = extrasSel.includes(ex.id)
-                    return (
-                      <label
-                        key={ex.id}
-                        className={`flex items-center gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all duration-300 hover-lift hover:shadow-lg group/item ${
-                          checked
-                            ? 'border-teal-500 bg-teal-50/50 shadow-md'
-                            : 'border-gray-200 bg-white/50 backdrop-blur-sm hover:border-gray-300'
-                        }`}
-                        style={{ animationDelay: `${0.8 + index * 0.1}s` }}
-                      >
-                        <Checkbox
-                          checked={checked}
-                          onCheckedChange={(v) => {
-                            setExtrasSel((s) => (v ? [...s, ex.id] : s.filter((id) => id !== ex.id)))
-                          }}
-                          className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
-                        />
-                        <span className="text-sm font-medium flex-1">{ex.nombre}</span>
-                        <span className={`text-sm font-semibold px-2 py-1 rounded-lg ${
-                          checked ? 'text-teal-700 bg-teal-100' : 'text-gray-600 bg-gray-100'
-                        }`}>
-                          ${ex.precio.toLocaleString("es-AR")}
-                        </span>
-                      </label>
-                    )
-                  })}
+              {localStorage.getItem('showExtrasFijos') !== 'false' && (
+                <div className="space-y-3 animate-staggered-fade-in delay-700">
+                  <Label className="text-sm font-semibold text-gray-700">Servicios extras (precio fijo)</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {state.config.extrasFijos.map((ex, index) => {
+                      const checked = extrasSel.includes(ex.id)
+                      return (
+                        <label
+                          key={ex.id}
+                          className={`flex items-center gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all duration-300 hover-lift hover:shadow-lg group/item ${
+                            checked
+                              ? 'border-teal-500 bg-teal-50/50 shadow-md'
+                              : 'border-gray-200 bg-white/50 backdrop-blur-sm hover:border-gray-300'
+                          }`}
+                          style={{ animationDelay: `${0.8 + index * 0.1}s` }}
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => {
+                              setExtrasSel((s) => (v ? [...s, ex.id] : s.filter((id) => id !== ex.id)))
+                            }}
+                            className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
+                          />
+                          <span className="text-sm font-medium flex-1">{ex.nombre}</span>
+                          <span className={`text-sm font-semibold px-2 py-1 rounded-lg ${
+                            checked ? 'text-teal-700 bg-teal-100' : 'text-gray-600 bg-gray-100'
+                          }`}>
+                            ${ex.precio.toLocaleString("es-AR")}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Cleaning Cost Controls */}
               <div className="space-y-3 animate-staggered-fade-in delay-800">
@@ -297,43 +339,111 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
                     >
                       <div className="text-sm font-semibold text-gray-800 mb-1">{it.nombre}</div>
                       <div className="text-xs text-gray-500 mb-3">x ${it.precioUnitario.toLocaleString("es-AR")} c/u</div>
-                      <Input
-                        className="h-10 px-3 border border-gray-300 rounded-lg bg-white/80 transition-all duration-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:bg-white hover:border-gray-400"
-                        type="number"
-                        min={0}
-                        value={typeof cantidades[it.id] === 'number' ? cantidades[it.id] : (typeof cantidades[it.id] === 'object' ? cantidades[it.id].cantidad : 0)}
-                        onChange={(e) => {
-                          const value = Number(e.target.value)
-                          setCantidades((s) => ({
-                            ...s,
-                            [it.id]: { cantidad: value, precioUnitarioFijo: it.precioUnitario }
-                          }))
-                        }}
-                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="btn-qty"
+                          onClick={() => {
+                            const currentValue = typeof cantidades[it.id] === 'number'
+                              ? (cantidades[it.id] as number)
+                              : (typeof cantidades[it.id] === 'object' && cantidades[it.id] !== null
+                                ? (cantidades[it.id] as { cantidad: number }).cantidad
+                                : 0)
+                            const next = Math.max(0, currentValue - 1)
+                            setCantidades((s) => ({
+                              ...s,
+                              [it.id]: { cantidad: next, precioUnitarioFijo: it.precioUnitario }
+                            }))
+                          }}
+                          aria-label={`Disminuir ${it.nombre}`}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          className="h-10 w-20 text-center px-3 border border-gray-300 rounded-lg bg-white/80 transition-all duration-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:bg-white hover:border-gray-400"
+                          type="number"
+                          min={0}
+                          value={typeof cantidades[it.id] === 'number' ? cantidades[it.id] : (typeof cantidades[it.id] === 'object' ? (cantidades[it.id] as { cantidad: number }).cantidad : 0)}
+                          onChange={(e) => {
+                            const value = Number(e.target.value)
+                            setCantidades((s) => ({
+                              ...s,
+                              [it.id]: { cantidad: value, precioUnitarioFijo: it.precioUnitario }
+                            }))
+                          }}
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          aria-label={`Cantidad de ${it.nombre}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="btn-qty"
+                          onClick={() => {
+                            const currentValue = typeof cantidades[it.id] === 'number'
+                              ? (cantidades[it.id] as number)
+                              : (typeof cantidades[it.id] === 'object' && cantidades[it.id] !== null
+                                ? (cantidades[it.id] as { cantidad: number }).cantidad
+                                : 0)
+                            const next = currentValue + 1
+                            setCantidades((s) => ({
+                              ...s,
+                              [it.id]: { cantidad: next, precioUnitarioFijo: it.precioUnitario }
+                            }))
+                          }}
+                          aria-label={`Aumentar ${it.nombre}`}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
               
-              {/* Descuento section */}
-              <div className="space-y-3 animate-staggered-fade-in delay-1000 group">
-                <Label htmlFor="descuento" className="text-sm font-semibold text-gray-700">Descuento (%)</Label>
-                <Input
-                  id="descuento"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={descuentoPorcentaje}
-                  onChange={(e) => setDescuentoPorcentaje(Number(e.target.value))}
-                  placeholder="0"
-                  className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg"
-                />
-                {descuentoPorcentaje > 0 && (
-                  <div className="animate-bounce-in text-sm text-green-700 font-semibold bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                    🎉 Descuento aplicado: {descuentoPorcentaje}% (${((calc.totalSinDescuento * descuentoPorcentaje) / 100).toLocaleString("es-AR")})
-                  </div>
-                )}
-              </div>
+              {localStorage.getItem('showDescuento') !== 'false' && (
+                <div className="space-y-3 animate-staggered-fade-in delay-1000 group">
+                  <Label htmlFor="descuento" className="text-sm font-semibold text-gray-700">Descuento (%)</Label>
+                  <Input
+                    id="descuento"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={descuentoPorcentaje}
+                    onChange={(e) => setDescuentoPorcentaje(Number(e.target.value))}
+                    placeholder="0"
+                    className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg"
+                  />
+                  {descuentoPorcentaje > 0 && (
+                    <div className="animate-bounce-in text-sm text-green-700 font-semibold bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      🎉 Descuento aplicado: {descuentoPorcentaje}% (${((calc.totalSinDescuento * descuentoPorcentaje) / 100).toLocaleString("es-AR")})
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {localStorage.getItem('showCostoExtra') !== 'false' && (
+                <div className="space-y-3 animate-staggered-fade-in delay-1050 group">
+                  <Label htmlFor="costoExtra" className="text-sm font-semibold text-gray-700">Costo extra</Label>
+                  <Input
+                    id="costoExtra"
+                    type="number"
+                    min={0}
+                    value={costoExtra}
+                    onChange={(e) => setCostoExtra(Number(e.target.value))}
+                    placeholder="0"
+                    className="h-12 px-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 focus:bg-white hover:border-gray-300 hover:shadow-lg"
+                  />
+                  {costoExtra > 0 && (
+                    <div className="animate-bounce-in text-sm text-blue-700 font-semibold bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                      ➕ Costo extra aplicado: ${costoExtra.toLocaleString("es-AR")}
+                    </div>
+                  )}
+                </div>
+              )}
             </React.Fragment>
           )}
 
@@ -346,6 +456,7 @@ export function NewReservationForm({ defaultDate, onCreated }: Props = { default
             tipo={tipo}
             descuentoPorcentaje={descuentoPorcentaje || 0}
             totalConDescuento={calc.totalConDescuento}
+            costoExtra={calc.costoExtra}
           />
 
           <div className="flex justify-end animate-staggered-fade-in delay-1100">

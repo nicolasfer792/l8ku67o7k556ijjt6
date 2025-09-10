@@ -146,7 +146,8 @@ export function ReservationDetailsDialog({ date, reservations, open, onOpenChang
                   const hasDiscount = p > 0
                   const originalTotal = hasDiscount ? Math.round(r.total / (1 - p / 100)) : r.total
                   const discountAmount = hasDiscount ? (originalTotal - r.total) : 0
-                  const totalToCharge = r.total
+                  const costoExtra = r.costoExtra ?? 0
+                  const totalToCharge = originalTotal - discountAmount + costoExtra
 
                   return (
                     <div key={r.id} className="border rounded-lg p-4 space-y-4 bg-gradient-to-br from-white to-gray-50/50 shadow-sm hover:shadow-md transition-all duration-300">
@@ -215,6 +216,11 @@ export function ReservationDetailsDialog({ date, reservations, open, onOpenChang
                                 <div className="text-xs text-red-600 font-medium">
                                   🎉 Descuento {r.descuentoPorcentaje}%: <span className="font-bold">-{formatCurrency(discountAmount)}</span>
                                 </div>
+                                {costoExtra > 0 && (
+                                  <div className="text-xs text-blue-600 font-medium">
+                                    ➕ Costo extra: <span className="font-bold">+{formatCurrency(costoExtra)}</span>
+                                  </div>
+                                )}
                                 <div className="text-xs text-blue-600 font-medium">
                                   💰 Total a cobrar: <span className="text-sm font-bold text-blue-700">{formatCurrency(totalToCharge)}</span>
                                 </div>

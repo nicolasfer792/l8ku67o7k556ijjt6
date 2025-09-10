@@ -84,26 +84,26 @@ export function NotificationBell() {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl border border-gray-200 hover:border-teal-300 hover:bg-teal-50 transition-all duration-300 hover-lift group"
+          className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl border border-gray-200 hover:border-teal-300 hover:bg-teal-50 transition-all duration-300 hover-lift group shadow-sm"
           aria-label="Notificaciones de pago"
         >
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-slate-700 group-hover:text-teal-700 transition-colors" />
+          <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-slate-700 group-hover:text-teal-700 transition-colors duration-200" />
           {totalBadge > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[1.25rem] h-5 sm:min-w-6 sm:h-6 px-1 flex items-center justify-center text-[10px] sm:text-xs font-bold rounded-full bg-red-600 text-white shadow-lg">
+            <span className="absolute -top-1 -right-1 min-w-[1.25rem] h-5 sm:min-w-6 sm:h-6 px-1 flex items-center justify-center text-[10px] sm:text-xs font-bold rounded-full bg-red-500 text-white shadow-lg animate-pulse">
               {totalBadge}
             </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[92vw] sm:w-96 max-h-[85vh] p-0 border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br from-white/95 via-white/90 to-white/95 backdrop-blur-xl shadow-2xl">
-        <div className="px-3 py-2 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-slate-100">
+        <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-slate-100 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-md">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-lg">
               <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-semibold text-slate-800">Alertas de pago</h3>
-              <p className="text-[11px] sm:text-xs text-slate-500">
+              <h3 className="text-base sm:text-lg font-bold text-slate-800">🔔 Alertas de Pago</h3>
+              <p className="text-sm text-slate-600 mt-1">
                 {totalBadge > 0
                   ? `${totalBadge} reserva${totalBadge === 1 ? "" : "s"} con pago pendiente`
                   : "Sin pagos pendientes"}
@@ -115,20 +115,23 @@ export function NotificationBell() {
         <div className="max-h-[65vh] md:max-h-[70vh] pr-1 overflow-y-auto">
           <div className="p-3 space-y-4">
             {totalBadge === 0 && (
-              <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                <div className="text-sm text-emerald-700">
-                  No hay reservas con pagos pendientes en los próximos 30 días.
+              <div className="flex items-center gap-4 p-6 rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-sm">
+                <div className="p-2 bg-emerald-100 rounded-xl">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                </div>
+                <div className="text-sm text-emerald-800">
+                  <p className="font-medium">¡Excelente!</p>
+                  <p>No hay reservas con pagos pendientes en los próximos 30 días.</p>
                 </div>
               </div>
             )}
 
             {red.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-red-500 shadow" />
-                  <span className="text-xs sm:text-sm font-semibold text-red-700">
-                    Críticas (≤ 7 días o vencidas) — {red.length}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-2 bg-red-50 rounded-xl">
+                  <span className="inline-flex h-3 w-3 rounded-full bg-red-500 shadow-lg" />
+                  <span className="text-sm font-bold text-red-800">
+                    🚨 Críticas (≤ 7 días o vencidas) — {red.length}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -156,17 +159,24 @@ export function NotificationBell() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className="cursor-pointer rounded-xl border border-red-200 bg-gradient-to-br from-red-50 to-white p-2 sm:p-3 hover:shadow-md hover:border-red-300 active:scale-[0.99] transition-all duration-200"
+                      className="cursor-pointer rounded-xl border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-3 hover:shadow-lg hover:border-red-300 active:scale-[0.98] transition-all duration-200 shadow-sm"
                     >
                       <div className="flex items-start justify-between">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-red-600" />
-                            <span className="text-[13px] sm:text-sm font-semibold text-red-800 truncate">
-                              {n.nombreCliente}
-                            </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                            <div>
+                              <span className="text-sm font-bold text-red-800 block truncate">
+                                {n.nombreCliente}
+                              </span>
+                              <span className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
+                                n.tipo === "patio" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
+                              }`}>
+                                {n.tipo === "patio" ? "Patio" : "Salón"}
+                              </span>
+                            </div>
                           </div>
-                          <div className="mt-1 text-[11px] sm:text-xs text-red-700/90">
+                          <div className="text-xs text-red-700/90">
                             {n.daysUntil < 0
                               ? "El cliente no terminó de pagar (evento vencido)"
                               : n.missing === 0
@@ -175,12 +185,13 @@ export function NotificationBell() {
                               ? "El cliente no pagó"
                               : "El cliente no terminó de pagar"}
                           </div>
-                          <div className="mt-1 text-[11px] text-red-700/80">
-                            {formatDaysText(n.daysUntil)} • {n.fecha}
+                          <div className="mt-1 text-xs text-red-700/80 flex items-center gap-2">
+                            <span>📅 {formatDaysText(n.daysUntil)}</span>
+                            <span>• {n.fecha}</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-xs sm:text-sm font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-lg">
+                        <div className="text-right flex-shrink-0 ml-4">
+                          <div className="text-sm font-bold text-red-700 bg-red-100 px-3 py-1 rounded-lg shadow-sm">
                             Falta {formatCurrency(n.missing)}
                           </div>
                         </div>
@@ -192,11 +203,11 @@ export function NotificationBell() {
             )}
 
             {yellow.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-amber-400 shadow" />
-                  <span className="text-xs sm:text-sm font-semibold text-amber-700">
-                    Próximas (8–30 días) — {yellow.length}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-2 bg-amber-50 rounded-xl">
+                  <span className="inline-flex h-3 w-3 rounded-full bg-amber-400 shadow-lg" />
+                  <span className="text-sm font-bold text-amber-800">
+                    ⚠️ Próximas (8–30 días) — {yellow.length}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -224,25 +235,33 @@ export function NotificationBell() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className="cursor-pointer rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-2 sm:p-3 hover:shadow-md hover:border-amber-300 active:scale-[0.99] transition-all duration-200"
+                      className="cursor-pointer rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-3 hover:shadow-lg hover:border-amber-300 active:scale-[0.98] transition-all duration-200 shadow-sm"
                     >
                       <div className="flex items-start justify-between">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4 text-amber-600" />
-                            <span className="text-[13px] sm:text-sm font-semibold text-amber-800 truncate">
-                              {n.nombreCliente}
-                            </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                            <div>
+                              <span className="text-sm font-bold text-amber-800 block truncate">
+                                {n.nombreCliente}
+                              </span>
+                              <span className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium ${
+                                n.tipo === "patio" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
+                              }`}>
+                                {n.tipo === "patio" ? "Patio" : "Salón"}
+                              </span>
+                            </div>
                           </div>
-                          <div className="mt-1 text-[11px] sm:text-xs text-amber-800/90">
+                          <div className="text-xs text-amber-800/90">
                             El cliente no terminó de pagar
                           </div>
-                          <div className="mt-1 text-[11px] text-amber-700/80">
-                            {formatDaysText(n.daysUntil)} • {n.fecha}
+                          <div className="mt-1 text-xs text-amber-700/80 flex items-center gap-2">
+                            <span>📅 {formatDaysText(n.daysUntil)}</span>
+                            <span>• {n.fecha}</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-xs sm:text-sm font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-lg">
+                        <div className="text-right flex-shrink-0 ml-4">
+                          <div className="text-sm font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-lg shadow-sm">
                             Falta {formatCurrency(n.missing)}
                           </div>
                         </div>

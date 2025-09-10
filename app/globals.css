@@ -95,6 +95,7 @@
     }
     
     .animate-fade-in,
+    .animate-fade-out,
     .animate-scale-in,
     .animate-pulse-subtle,
     .transition-all-ease,
@@ -119,6 +120,7 @@
     }
     
     .animate-fade-in,
+    .animate-fade-out,
     .animate-scale-in,
     .animate-pulse-subtle,
     .transition-all-ease,
@@ -196,6 +198,10 @@
     animation: fadeIn 0.3s ease-out forwards;
   }
   
+  .animate-fade-out {
+    animation: fadeOut 0.3s ease-in forwards;
+  }
+  
   .animate-scale-in {
     animation: scaleIn 0.2s var(--ease-out-expo) forwards;
   }
@@ -269,12 +275,30 @@
   .animate-glow {
     animation: glow 2s ease-in-out infinite;
   }
+
+  /* New reservation form UI helpers */
+  .input-with-icon {
+    @apply pl-10;
+  }
+  .input-icon {
+    @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none;
+  }
+  .form-error {
+    @apply mt-1 text-sm text-red-600;
+  }
+  .btn-qty {
+    @apply h-10 w-10 rounded-lg border-2 border-gray-200 bg-white/70 hover:border-teal-300 hover:bg-teal-50 transition-all duration-200;
+  }
 }
 
 /* Keyframes */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-6px); }
 }
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.95); }

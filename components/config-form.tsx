@@ -5,8 +5,9 @@ import { useAtila } from "@/store/atila-provider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { Upload, CheckCircle, AlertCircle, Database } from "lucide-react"
+import { Upload, CheckCircle, AlertCircle, Database, Eye } from "lucide-react"
 import { processExcelFile, type ProcessedReservationData } from "@/lib/excel-processor"
 import { migrateReservationsFromExcel } from "@/app/actions"
 
@@ -19,6 +20,10 @@ export function ConfigForm() {
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([])
   const [extractedData, setExtractedData] = React.useState<ProcessedReservationData[]>([])
   const [processingResults, setProcessingResults] = React.useState<string>("")
+
+  const [showExtrasFijos, setShowExtrasFijos] = React.useState(() => localStorage.getItem('showExtrasFijos') !== 'false')
+  const [showDescuento, setShowDescuento] = React.useState(() => localStorage.getItem('showDescuento') !== 'false')
+  const [showCostoExtra, setShowCostoExtra] = React.useState(() => localStorage.getItem('showCostoExtra') !== 'false')
 
   React.useEffect(() => {
     setCfg(state.config)
@@ -416,6 +421,57 @@ export function ConfigForm() {
                 Agregar ítem
               </Button>
             </div>
+          </div>
+
+          <div className="space-y-4 animate-staggered-fade-in delay-700">
+            <Card className="glass-card bg-white/80 backdrop-blur-sm border border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Opciones extra en reservas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex items-center space-x-2 p-3 rounded-lg bg-white/50 backdrop-blur-sm hover:bg-white/70 transition-all duration-200 animate-staggered-fade-in delay-100">
+                    <Checkbox
+                      id="showExtrasFijos"
+                      checked={showExtrasFijos}
+                      onCheckedChange={(checked: boolean) => {
+                        setShowExtrasFijos(checked)
+                        localStorage.setItem('showExtrasFijos', checked.toString())
+                      }}
+                      className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
+                    />
+                    <Label htmlFor="showExtrasFijos" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">Servicios extras (precio fijo)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 rounded-lg bg-white/50 backdrop-blur-sm hover:bg-white/70 transition-all duration-200 animate-staggered-fade-in delay-200">
+                    <Checkbox
+                      id="showDescuento"
+                      checked={showDescuento}
+                      onCheckedChange={(checked: boolean) => {
+                        setShowDescuento(checked)
+                        localStorage.setItem('showDescuento', checked.toString())
+                      }}
+                      className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
+                    />
+                    <Label htmlFor="showDescuento" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">Descuento (%)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 rounded-lg bg-white/50 backdrop-blur-sm hover:bg-white/70 transition-all duration-200 animate-staggered-fade-in delay-300">
+                    <Checkbox
+                      id="showCostoExtra"
+                      checked={showCostoExtra}
+                      onCheckedChange={(checked: boolean) => {
+                        setShowCostoExtra(checked)
+                        localStorage.setItem('showCostoExtra', checked.toString())
+                      }}
+                      className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
+                    />
+                    <Label htmlFor="showCostoExtra" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">Costo extra</Label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="space-y-4 animate-staggered-fade-in delay-700">

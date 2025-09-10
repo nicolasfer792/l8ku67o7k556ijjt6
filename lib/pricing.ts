@@ -12,6 +12,7 @@ export function computeReservationTotal(
     extrasFijosTotalFijo?: number
     cantidadesTotalFijo?: number
     descuentoPorcentaje?: number
+    costoExtra?: number
   },
   config: PricingConfig,
 ) {
@@ -68,6 +69,17 @@ export function computeReservationTotal(
       }, 0)
     }
     if (input.tipo === "patio") cantidadesTotal = 0;
+
+  // Feature flags (si no existen en config, se consideran habilitados por defecto)
+  const enableExtras = (config as any).enableExtrasFijos !== false
+  const enableItems = (config as any).enableItemsPorCantidad !== false
+  const enableDescuento = (config as any).enableDescuento !== false
+  const enableCostoExtra = (config as any).enableCostoExtra !== false
+
+  // Aplicar flags sobre componentes del cálculo
+  if (!enableExtras) extrasFijosTotal = 0
+  if (!enableItems) cantidadesTotal = 0
+
   // Calculate cleaning cost if applicable
   let limpieza = 0;
   if (input.tipo === "salon") {
@@ -81,13 +93,18 @@ export function computeReservationTotal(
 
   const totalSinDescuento = base + input.cantidadPersonas * perPerson + extrasFijosTotal + cantidadesTotal;
   
-  // Aplicar descuento si existe
-  const descuentoPorcentaje = input.descuentoPorcentaje || 0;
+  // Aplicar descuento si existe y está habilitado
+  const descuentoPorcentaje = enableDescuento ? (input.descuentoPorcentaje || 0) : 0;
   const montoDescuento = (totalSinDescuento * descuentoPorcentaje) / 100;
   const totalConDescuento = totalSinDescuento - montoDescuento;
- 
+
+  // Costo extra (suma directa al total si está habilitado)
+  const costoExtraAplicado = enableCostoExtra ? (input.costoExtra || 0) : 0;
+
+  const totalFinal = totalConDescuento + costoExtraAplicado;
+
   return {
-    total: totalConDescuento,
+    total: totalFinal,
     totalSinDescuento,
     totalConDescuento,
     esFinDeSemana: weekend,
@@ -99,5 +116,6 @@ export function computeReservationTotal(
       patio: input.tipo === "patio" ? config.precioPatio || 0 : 0,
     },
     costoLimpieza: limpieza, // The actual cleaning cost (for internal profit calculation)
+    costoExtra: costoExtraAplicado,
   }
 }

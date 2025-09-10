@@ -66,6 +66,10 @@ function mapRowToConfig(row: any): PricingConfig {
     costoLimpiezaFijo: Number(row.costo_limpieza_fijo),
     extrasFijos: (row.extras_fijos || []) as PricingConfig["extrasFijos"],
     itemsPorCantidad: (row.items_por_cantidad || []) as PricingConfig["itemsPorCantidad"],
+    enableExtrasFijos: row.enable_extras_fijos ?? true,
+    enableItemsPorCantidad: row.enable_items_por_cantidad ?? true,
+    enableDescuento: row.enable_descuento ?? true,
+    enableCostoExtra: row.enable_costo_extra ?? true,
   }
 }
 
@@ -103,6 +107,10 @@ export async function fetchInitialData(): Promise<AppStateShape> {
         { id: "sillas", nombre: "Sillas", precioUnitario: 300 },
         { id: "manteles", nombre: "Manteles", precioUnitario: 800 },
       ],
+      enableExtrasFijos: true,
+      enableItemsPorCantidad: true,
+      enableDescuento: true,
+      enableCostoExtra: true,
     }
     const { error: insErr } = await supabase.from("pricing_config").insert({
       id: "singleton", // Usar un ID fijo para el singleton
@@ -114,6 +122,10 @@ export async function fetchInitialData(): Promise<AppStateShape> {
       costo_limpieza_fijo: defaultCfg.costoLimpiezaFijo,
       extras_fijos: defaultCfg.extrasFijos,
       items_por_cantidad: defaultCfg.itemsPorCantidad,
+      enable_extras_fijos: defaultCfg.enableExtrasFijos,
+      enable_items_por_cantidad: defaultCfg.enableItemsPorCantidad,
+      enable_descuento: defaultCfg.enableDescuento,
+      enable_costo_extra: defaultCfg.enableCostoExtra,
     })
     if (insErr) {
       console.error("Error al insertar configuración por defecto:", insErr)
@@ -175,6 +187,7 @@ export async function createReservation(
   let precioPorPersonaFijo: number
   let extrasFijosTotalFijo: number
   let cantidadesTotalFijo: number
+  let costoExtra: number
 
   if (formData instanceof FormData) {
     // Extract data from FormData
@@ -202,6 +215,7 @@ export async function createReservation(
     precioPorPersonaFijo = Number(formData.get("precioPorPersonaFijo") || 0)
     extrasFijosTotalFijo = Number(formData.get("extrasFijosTotalFijo") || 0)
     cantidadesTotalFijo = Number(formData.get("cantidadesTotalFijo") || 0)
+    costoExtra = Number(formData.get("costoExtra") || 0)
   } else {
     // Handle plain object input
     nombreCliente = formData.nombreCliente
@@ -219,6 +233,7 @@ export async function createReservation(
     precioPorPersonaFijo = formData.precioPorPersonaFijo ?? 0
     extrasFijosTotalFijo = formData.extrasFijosTotalFijo ?? 0
     cantidadesTotalFijo = formData.cantidadesTotalFijo ?? 0
+    costoExtra = (formData as any).costoExtra ?? 0
   }
 
   // If it's a migrated reservation and no notes are provided, add a default note
@@ -246,6 +261,7 @@ export async function createReservation(
     extrasFijosTotalFijo,
     cantidadesTotalFijo,
     descuentoPorcentaje,
+    costoExtra,
   }
 
   // Helper function to get pricing config
@@ -370,6 +386,20 @@ export async function createReservation(
   } catch (e) {
     // La columna no existe, no la incluimos
     console.log("Columna descuento_porcentaje no encontrada, omitiendo...")
+  }
+
+  // Agregar costo_extra si la columna existe en la BD
+  try {
+    const { error: testError } = await supabase
+      .from("reservations")
+      .select("costo_extra")
+      .limit(1)
+
+    if (!testError) {
+      reservationRow.costo_extra = (payload as any).costoExtra || 0
+    }
+  } catch (e) {
+    console.log("Columna costo_extra no encontrada, omitiendo...")
   }
 
  const { data: savedReservation, error: resErr } = await supabase
@@ -544,6 +574,7 @@ export async function updateReservation(
     pagado?: number
     pagadoEn?: Array<{ fecha: string; monto: number }>
     descuentoPorcentaje?: number
+    costoExtra?: number
   }
  ) {
    const supabase = getSupabaseServer()
@@ -705,7 +736,7 @@ export async function updateReservation(
        .select("descuento_porcentaje")
        .eq("id", id)
        .limit(1)
-
+ 
      if (!testError) {
        // La columna existe, la incluimos
        updateData.descuento_porcentaje = (payload as any).descuentoPorcentaje || 0
@@ -713,6 +744,21 @@ export async function updateReservation(
    } catch (e) {
      // La columna no existe, no la incluimos
      console.log("Columna descuento_porcentaje no encontrada, omitiendo...")
+   }
+
+   // Solo agregar costo_extra si la columna existe en la BD
+   try {
+     const { data: testColumn, error: testError } = await supabase
+       .from("reservations")
+       .select("costo_extra")
+       .eq("id", id)
+       .limit(1)
+
+     if (!testError) {
+       updateData.costo_extra = (payload as any).costoExtra || 0
+     }
+   } catch (e) {
+     console.log("Columna costo_extra no encontrada, omitiendo...")
    }
 
   const { data: updatedReservation, error: updateErr } = await supabase
@@ -764,6 +810,10 @@ export async function saveConfigAction(cfg: PricingConfig) {
       extras_fijos: cfg.extrasFijos,
       items_por_cantidad: cfg.itemsPorCantidad,
       precio_patio: cfg.precioPatio,
+      enable_extras_fijos: cfg.enableExtrasFijos ?? true,
+      enable_items_por_cantidad: cfg.enableItemsPorCantidad ?? true,
+      enable_descuento: cfg.enableDescuento ?? true,
+      enable_costo_extra: cfg.enableCostoExtra ?? false,
     },
     { onConflict: "id" },
   )
@@ -871,6 +921,7 @@ export async function recalculateReservationTotals() {
       extrasFijosTotalFijo: reservation.extras_fijos_total_fijo || 0,
       cantidadesTotalFijo: reservation.cantidades_total_fijo || 0,
       descuentoPorcentaje: reservation.descuento_porcentaje || 0,
+      costoExtra: reservation.costo_extra || 0,
     }
 
     // Recalcular total con descuento

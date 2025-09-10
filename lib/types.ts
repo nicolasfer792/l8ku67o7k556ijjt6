@@ -21,6 +21,11 @@ export type PricingConfig = {
   costoLimpiezaFijo: number // Este es un gasto del negocio, no se suma al cliente
   extrasFijos: FixedExtra[]
   itemsPorCantidad: QuantityItem[]
+  // Flags de visibilidad/uso de funciones
+  enableExtrasFijos?: boolean
+  enableItemsPorCantidad?: boolean
+  enableDescuento?: boolean
+  enableCostoExtra?: boolean
 }
 
 export type Reservation = {
@@ -53,6 +58,9 @@ export type Reservation = {
   // Campos para descuentos
   descuentoPorcentaje?: number // Porcentaje de descuento aplicado (0-100)
   totalConDescuento?: number // Total final con descuento aplicado
+
+  // Nuevo: costo extra (cargo adicional directo al cliente)
+  costoExtra?: number
 }
 
 export type Expense = {

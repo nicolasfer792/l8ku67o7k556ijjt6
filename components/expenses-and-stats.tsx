@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { ToggleGroup, Toggle } from "@/components/ui/toggle-group"
 import { useAtila } from "@/store/atila-provider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,7 +21,7 @@ import {
   CartesianGrid,
 } from "recharts"
 import { formatCurrency } from "@/lib/date-utils"
-import { format, startOfWeek } from "date-fns"
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 
 function groupByPeriod(
   reservas: ReturnType<typeof useAtila>["state"]["reservas"],
@@ -84,6 +85,33 @@ export function ExpensesAndStats() {
 
   const { rows: chartData, totals } = groupByPeriod(state.reservas, state.gastos, periodo)
 
+  const now = new Date()
+  let currentStart: Date, currentEnd: Date
+  if (periodo === "semana") {
+    currentStart = startOfWeek(now, { weekStartsOn: 1 })
+    currentEnd = endOfWeek(now, { weekStartsOn: 1 })
+  } else if (periodo === "mes") {
+    currentStart = startOfMonth(now)
+    currentEnd = endOfMonth(now)
+  } else {
+    currentStart = startOfYear(now)
+    currentEnd = endOfYear(now)
+  }
+
+  const filteredReservas = state.reservas.filter((r) => {
+    const rDate = new Date(r.fecha + "T00:00:00")
+    return rDate >= currentStart && rDate <= currentEnd
+  })
+
+  const filteredGastos = state.gastos.filter((g) => {
+    const gDate = new Date(g.fecha + "T00:00:00")
+    return gDate >= currentStart && gDate <= currentEnd
+  })
+
+  const currentIngresos = filteredReservas.reduce((acc, r) => acc + r.total, 0)
+  const currentGastos = filteredGastos.reduce((acc, g) => acc + g.monto, 0)
+  const currentUtilidad = currentIngresos - currentGastos
+
   const add = (e: React.FormEvent) => {
     e.preventDefault()
     if (!nombre || !fecha) return
@@ -141,16 +169,18 @@ export function ExpensesAndStats() {
           <CardTitle className="animate-slide-in-right">Estadísticas financieras</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2 text-sm animate-staggered-fade-in delay-400">
-            <Button variant={periodo === "semana" ? "default" : "outline"} onClick={() => setPeriodo("semana")} className="transition-all duration-200 hover:scale-105">
-              Semanal
-            </Button>
-            <Button variant={periodo === "mes" ? "default" : "outline"} onClick={() => setPeriodo("mes")} className="transition-all duration-200 hover:scale-105">
-              Mensual
-            </Button>
-            <Button variant={periodo === "anio" ? "default" : "outline"} onClick={() => setPeriodo("anio")} className="transition-all duration-200 hover:scale-105">
-              Anual
-            </Button>
+          <div className="flex justify-center mb-4 animate-staggered-fade-in delay-400">
+            <ToggleGroup type="single" value={periodo} onValueChange={(value: "semana" | "mes" | "anio") => setPeriodo(value)} className="bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-lg">
+              <Toggle value="semana" className="data-[state=on]:bg-teal-500 data-[state=on]:text-white rounded-full px-4 py-2 transition-all duration-200 hover:bg-teal-100">
+                📅 Semana
+              </Toggle>
+              <Toggle value="mes" className="data-[state=on]:bg-teal-500 data-[state=on]:text-white rounded-full px-4 py-2 transition-all duration-200 hover:bg-teal-100">
+                📅 Mes
+              </Toggle>
+              <Toggle value="anio" className="data-[state=on]:bg-teal-500 data-[state=on]:text-white rounded-full px-4 py-2 transition-all duration-200 hover:bg-teal-100">
+                📅 Año
+              </Toggle>
+            </ToggleGroup>
           </div>
           <div className="h-64 animate-staggered-fade-in delay-500">
             <ResponsiveContainer width="100%" height="100%">
@@ -189,15 +219,15 @@ export function ExpensesAndStats() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="flex flex-col items-center justify-center rounded-lg bg-green-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
                 <span className="text-sm font-medium text-green-700">Ingresos Totales</span>
-                <span className="text-xl font-bold text-green-800 animate-pulse-text">{formatCurrency(totals.ingresos)}</span>
+                <span className="text-xl font-bold text-green-800 animate-pulse-text">{formatCurrency(currentIngresos)}</span>
               </div>
               <div className="flex flex-col items-center justify-center rounded-lg bg-orange-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
                 <span className="text-sm font-medium text-orange-700">Gastos Totales</span>
-                <span className="text-xl font-bold text-orange-800 animate-pulse-text">{formatCurrency(totals.gastos)}</span>
+                <span className="text-xl font-bold text-orange-800 animate-pulse-text">{formatCurrency(currentGastos)}</span>
               </div>
-              <div className="flex flex-col items-center justify-center rounded-lg bg-teal-50 p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
-                <span className="text-sm font-medium text-teal-700">Ganancia Neta</span>
-                <span className="text-xl font-bold text-teal-800 animate-pulse-text">{formatCurrency(totals.ganancia - totals.perdida)}</span>
+              <div className={`flex flex-col items-center justify-center rounded-lg ${currentUtilidad >= 0 ? 'bg-green-50' : 'bg-red-50'} p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105`}>
+                <span className={`text-sm font-medium ${currentUtilidad >= 0 ? 'text-green-700' : 'text-red-700'}`}>Ganancia Neta</span>
+                <span className={`text-xl font-bold ${currentUtilidad >= 0 ? 'text-green-800' : 'text-red-800'} animate-pulse-text`}>{formatCurrency(currentUtilidad)}</span>
               </div>
             </div>
           </div>

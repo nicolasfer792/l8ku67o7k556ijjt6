@@ -7,24 +7,64 @@ export function DateSearch() {
   const { state } = useAtila()
   const [searchDate, setSearchDate] = useState<string>("")
   const [searchResult, setSearchResult] = useState<{status: string, message: string} | null>(null)
+  const [isFadingOut, setIsFadingOut] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const [focused, setFocused] = useState(false)
+
+  // Timers to manage auto-dismiss with fade-out
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (!searchDate) return
-    
+
+    // Clear any existing timers to avoid race conditions on rapid searches
+    if (clearTimerRef.current) {
+      clearTimeout(clearTimerRef.current)
+      clearTimerRef.current = null
+    }
+    if (fadeTimerRef.current) {
+      clearTimeout(fadeTimerRef.current)
+      fadeTimerRef.current = null
+    }
+    setIsFadingOut(false)
+
     // Check if date is available
     const reservationsForDate = state.reservas.filter((r) => r.fecha === searchDate)
     if (reservationsForDate.length === 0) {
-      setSearchResult({status: "success", message: "La fecha está disponible"})
+      setSearchResult({ status: "success", message: "La fecha está disponible" })
     } else {
       const statuses = [...new Set(reservationsForDate.map((r) => r.estado))]
-      setSearchResult({status: "error", message: `La fecha tiene reservas: ${statuses.join(", ")}`})
+      setSearchResult({ status: "error", message: `La fecha tiene reservas: ${statuses.join(", ")}` })
     }
+
+    // Auto-dismiss after 4s with 300ms fade-out
+    const fadeDuration = 300
+    const totalDuration = 4000
+    clearTimerRef.current = setTimeout(() => {
+      setIsFadingOut(true)
+      fadeTimerRef.current = setTimeout(() => {
+        setSearchResult(null)
+        setIsFadingOut(false)
+      }, fadeDuration)
+    }, totalDuration - fadeDuration)
   }
 
-  return (
+ React.useEffect(() => {
+   return () => {
+     if (clearTimerRef.current) {
+       clearTimeout(clearTimerRef.current)
+       clearTimerRef.current = null
+     }
+     if (fadeTimerRef.current) {
+       clearTimeout(fadeTimerRef.current)
+       fadeTimerRef.current = null
+     }
+   }
+ }, [])
+
+ return (
     <div className="w-full">
       <form onSubmit={handleSearch} className="flex items-center gap-2">
         <div className="relative flex-grow">
@@ -83,11 +123,14 @@ export function DateSearch() {
         </button>
       </form>
       {searchResult && (
-        <div className={`mt-2 px-2 py-1 rounded-lg text-xs font-medium ${
-          searchResult.status === "success"
-            ? "bg-green-100 text-green-800"
-            : "bg-red-100 text-red-800"
-        } animate-fade-in`}>
+        <div
+          className={`mt-2 px-2 py-1 rounded-lg text-xs font-medium ${
+            searchResult.status === "success"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          } ${isFadingOut ? "animate-fade-out" : "animate-fade-in"}`}
+          aria-live="polite"
+        >
           {searchResult.message}
         </div>
       )}
