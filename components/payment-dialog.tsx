@@ -215,9 +215,9 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
   }
 
   const getStatusText = () => {
-    if (isFullyPaid) return "✅ Pagado completo"
-    if (remainingAmount > 0) return `⚠️ Pendiente: ${formatCurrency(remainingAmount)}`
-    return "📝 Sin pagos"
+    if (isFullyPaid) return "Pago completado"
+    if (remainingAmount > 0) return `Pendiente: ${formatCurrency(remainingAmount)}`
+    return "Sin pagos"
   }
 
   const getProgressColor = (percentage: number) => {
@@ -254,11 +254,11 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
-        <DialogHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg p-4">
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
-            💳 Estado de Pago — {reservation.nombreCliente}
+        <DialogHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg p-4 border-b">
+          <DialogTitle className="text-xl font-bold text-gray-800">
+            Estado de Pago — {reservation.nombreCliente}
           </DialogTitle>
-          <DialogDescription className="text-gray-600">
+          <DialogDescription className="text-gray-600 mt-1">
             Gestiona los pagos de la reserva del {new Date(reservation.fecha).toLocaleDateString("es-ES")}
           </DialogDescription>
         </DialogHeader>
@@ -266,27 +266,27 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
         <div className="space-y-6 py-4">
           {/* Resumen del pago */}
           <div className="bg-white rounded-lg p-6 space-y-4 shadow-md border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">📊 Resumen del Pago</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Resumen del Pago</h3>
             <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                <span className="text-sm font-medium">💰 Total de la reserva:</span>
-                <span className="font-bold text-blue-700">{formatCurrency(reservation.total)}</span>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <span className="text-sm font-medium">Total de la reserva:</span>
+                <span className="font-bold text-slate-700">{formatCurrency(reservation.total)}</span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                <span className="text-sm font-medium">✅ Pagado:</span>
-                <span className="font-bold text-green-700">{formatCurrency(reservation.pagado || 0)}</span>
+              <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                <span className="text-sm font-medium">Pagado:</span>
+                <span className="font-bold text-emerald-700">{formatCurrency(reservation.pagado || 0)}</span>
               </div>
-              <div className="flex justify-between items-center p-3 rounded-lg {remainingAmount > 0 ? 'bg-red-50' : 'bg-green-50'}">
-                <span className="text-sm font-medium">{remainingAmount > 0 ? '⚠️' : '✅'} Saldo restante:</span>
-                <span className={`font-bold ${remainingAmount > 0 ? 'text-red-700' : 'text-green-700'}`}>
+              <div className={`flex justify-between items-center p-3 rounded-lg border ${remainingAmount > 0 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
+                <span className="text-sm font-medium">Saldo restante:</span>
+                <span className={`font-bold ${remainingAmount > 0 ? 'text-red-700' : 'text-emerald-700'}`}>
                   {formatCurrency(remainingAmount)}
                 </span>
               </div>
             </div>
-            <div className="pt-4">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm font-medium">📈 Progreso de pago:</span>
-                <span className="text-sm font-bold text-blue-600">{paymentPercentage}%</span>
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex justify-between items-center mb-3 mt-4">
+                <span className="text-sm font-medium">Progreso de pago:</span>
+                <span className="text-sm font-bold text-slate-700">{paymentPercentage}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
                 <div
@@ -295,38 +295,33 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
                 ></div>
               </div>
             </div>
-            <div className="flex justify-center">
-              <Badge className={`${getStatusColor()} px-4 py-2 text-sm shadow-lg`}>
-                {getStatusText()}
+            <div className="flex justify-center mt-4">
+              <Badge className={`px-4 py-2 text-sm font-medium border rounded-full ${isFullyPaid ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : remainingAmount > 0 ? 'bg-red-100 text-red-800 border-red-300' : 'bg-yellow-100 text-yellow-800 border-yellow-300'}`}>
+                {isFullyPaid ? 'Pago completado' : remainingAmount > 0 ? `Pendiente: ${formatCurrency(remainingAmount)}` : 'Sin pagos'}
               </Badge>
             </div>
           </div>
 
           {/* Historial de pagos */}
           {getPaymentHistory().length > 0 && (
-            <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                📅 Historial de Pagos
-              </h4>
+            <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200 mt-4">
+              <h4 className="text-lg font-semibold text-gray-800 mb-4">Historial de Pagos</h4>
               <div className="space-y-3 max-h-48 overflow-y-auto">
                 {getPaymentHistory().map((payment: any, idx: number) => (
-                  <div key={payment.index} className="relative flex items-center space-x-4 group hover:bg-gray-50 p-3 rounded-lg transition-all duration-200">
-                    <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-green-600 font-bold text-sm">💰</span>
-                    </div>
+                  <div key={payment.index} className="flex items-center space-x-4 group hover:bg-slate-50 p-3 rounded-lg transition-all duration-200 border-l-4 border-emerald-200">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm font-medium text-gray-900">
                           {new Date(payment.date + "T00:00:00").toLocaleDateString("es-ES")}
                         </p>
-                        <span className="text-sm font-bold text-green-600 ml-2">{formatCurrency(payment.amount)}</span>
+                        <span className="text-sm font-bold text-emerald-700">{formatCurrency(payment.amount)}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0 hover:bg-blue-100 transition-all duration-200"
+                        className="h-8 px-2 py-1 hover:bg-blue-100 transition-all duration-200"
                         onClick={(e) => {
                           e.stopPropagation()
                           setEditingPayment({
@@ -340,24 +335,21 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
                           })
                         }}
                       >
-                        <span className="text-blue-600">✏️</span>
+                        Editar
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0 text-red-500 hover:bg-red-100 hover:text-red-700 transition-all duration-200"
+                        className="h-8 px-2 py-1 text-red-500 hover:bg-red-100 hover:text-red-700 transition-all duration-200"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleDeletePayment(payment.index)
                         }}
                         disabled={isProcessing}
                       >
-                        <span className="text-red-500">🗑️</span>
+                        Eliminar
                       </Button>
                     </div>
-                    {idx < getPaymentHistory().length - 1 && (
-                      <div className="absolute left-5 top-10 w-0.5 h-full bg-gray-200"></div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -366,37 +358,36 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
 
           {/* Formulario de edición de pago */}
           {editingPayment && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-4">
-              <h4 className="text-lg font-semibold text-yellow-800 flex items-center gap-2">✏️ Editar Pago</h4>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4 mt-4">
+              <h4 className="text-lg font-semibold text-amber-800 mb-3">Editar Pago</h4>
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="edit-payment-date" className="text-sm font-medium">📅 Fecha de pago</Label>
+                  <Label htmlFor="edit-payment-date" className="text-sm font-medium mb-1">Fecha de pago</Label>
                   <Input
                     id="edit-payment-date"
                     type="date"
                     value={editForm.fecha}
                     onChange={(e) => setEditForm({...editForm, fecha: e.target.value})}
-                    className="mt-1 border-gray-300 focus:border-yellow-500"
+                    className="border-gray-300 focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="edit-payment-amount" className="text-sm font-medium">💰 Monto</Label>
+                  <Label htmlFor="edit-payment-amount" className="text-sm font-medium mb-1">Monto</Label>
                   <Input
                     id="edit-payment-amount"
                     type="number"
                     placeholder="0.00"
                     value={editForm.monto}
                     onChange={(e) => setEditForm({...editForm, monto: e.target.value})}
-                    className="mt-1 border-gray-300 focus:border-yellow-500"
+                    className="border-gray-300 focus:border-amber-500"
                   />
                 </div>
                 <div className="flex gap-2">
                   <Button
                     onClick={handleEditPayment}
                     disabled={isProcessing}
-                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-200 shadow-md"
+                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-white transition-all duration-200 shadow-md"
                   >
-                    <span className="mr-1" aria-hidden>💾</span>
                     {isProcessing ? "Procesando..." : "Guardar Cambios"}
                   </Button>
                   <Button
@@ -408,7 +399,6 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
                     disabled={isProcessing}
                     className="flex-1 border-gray-300 hover:bg-gray-100 transition-all duration-200"
                   >
-                    <span className="mr-1" aria-hidden>✖️</span>
                     Cancelar
                   </Button>
                 </div>
@@ -418,25 +408,25 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
 
           {/* Formulario de nuevo pago */}
           {!isFullyPaid && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-4">
-              <h4 className="text-lg font-semibold text-green-800 flex items-center gap-2">➕ Agregar Nuevo Pago</h4>
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 space-y-4 mt-4">
+              <h4 className="text-lg font-semibold text-emerald-800 mb-3">Agregar Nuevo Pago</h4>
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="payment-amount" className="text-sm font-medium">💰 Monto a pagar</Label>
+                  <Label htmlFor="payment-amount" className="text-sm font-medium mb-1">Monto a pagar</Label>
                   <Input
                     id="payment-amount"
                     type="number"
                     placeholder="0.00"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="mt-1 border-gray-300 focus:border-green-500"
+                    className="border-gray-300 focus:border-emerald-500"
                   />
                   <div className="flex gap-2 mt-2 flex-wrap">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="hover:bg-green-100 transition-all duration-200"
+                      className="hover:bg-emerald-100 transition-all duration-200"
                       onClick={() => setPaymentAmount(Math.max(0, Math.round((reservation.total - (reservation.pagado || 0)) * 0.25)).toString())}
                     >
                       25%
@@ -445,7 +435,7 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="hover:bg-green-100 transition-all duration-200"
+                      className="hover:bg-emerald-100 transition-all duration-200"
                       onClick={() => setPaymentAmount(Math.max(0, Math.round((reservation.total - (reservation.pagado || 0)) * 0.5)).toString())}
                     >
                       50%
@@ -454,7 +444,7 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="hover:bg-green-100 transition-all duration-200"
+                      className="hover:bg-emerald-100 transition-all duration-200"
                       onClick={() => setPaymentAmount(String(reservation.total - (reservation.pagado || 0)))}
                     >
                       Restante
@@ -462,27 +452,26 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="payment-date" className="text-sm font-medium">📅 Fecha de pago</Label>
+                  <Label htmlFor="payment-date" className="text-sm font-medium mb-1">Fecha de pago</Label>
                   <Input
                     id="payment-date"
                     type="date"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
-                    className="mt-1 border-gray-300 focus:border-green-500"
+                    className="border-gray-300 focus:border-emerald-500"
                   />
                 </div>
                 <Button
                   onClick={handleAddPayment}
                   disabled={isProcessing}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white transition-all duration-300 shadow-lg hover:shadow-xl hover-lift"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
-                  <span className="mr-1" aria-hidden>➕</span>
                   {isProcessing ? "Procesando..." : `Agregar Pago de ${formatCurrency(parseFloat(paymentAmount || '0'))}`}
                 </Button>
                 {message && (
-                  <div className={`text-sm p-3 rounded-lg shadow-sm ${
+                  <div className={`text-sm p-3 rounded-lg shadow-sm mt-2 ${
                     message.includes("exitosamente")
-                      ? "bg-green-100 border-green-200 text-green-800"
+                      ? "bg-emerald-100 border-emerald-200 text-emerald-800"
                       : "bg-red-100 border-red-200 text-red-800"
                   }`}>
                     {message}
@@ -494,19 +483,19 @@ export function PaymentDialog({ reservation, open, onOpenChange }: Props) {
 
           {/* Estado final después de la fecha del evento */}
           {new Date(reservation.fecha) < new Date() && (
-            <div className={`p-4 rounded-lg border-2 shadow-md ${
+            <div className={`p-4 rounded-lg border-2 shadow-md mt-4 ${
               isFullyPaid
-                ? "bg-green-50 border-green-300"
+                ? "bg-emerald-50 border-emerald-300"
                 : "bg-red-50 border-red-300"
             }`}>
               <div className="flex items-center gap-3">
                 {isFullyPaid ? (
-                  <span className="text-green-600 text-2xl" aria-hidden>✅</span>
+                  <span className="text-emerald-600 text-xl font-bold" aria-hidden>✓</span>
                 ) : (
-                  <span className="text-red-600 text-2xl" aria-hidden>❌</span>
+                  <span className="text-red-600 text-xl font-bold" aria-hidden>✗</span>
                 )}
                 <span className={`font-semibold text-lg ${
-                  isFullyPaid ? 'text-green-800' : 'text-red-800'
+                  isFullyPaid ? 'text-emerald-800' : 'text-red-800'
                 }`}>
                   {isFullyPaid
                     ? "La reserva está completamente pagada"

@@ -3,7 +3,12 @@ import type { Metadata } from "next"
 import { Montserrat, Open_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
-import { Providers } from "@/components/providers"
+import dynamic from 'next/dynamic'
+
+const Providers = dynamic(
+  () => import('@/components/providers').then((mod) => ({ default: mod.Providers })),
+  { ssr: false }
+)
 
 const montserrat = Montserrat({
   subsets: ["latin"],

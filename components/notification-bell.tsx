@@ -98,11 +98,11 @@ export function NotificationBell() {
       <PopoverContent className="w-[92vw] sm:w-96 max-h-[85vh] p-0 border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br from-white/95 via-white/90 to-white/95 backdrop-blur-xl shadow-2xl">
         <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-slate-100 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-lg">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-700 shadow-sm">
               <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-800">🔔 Alertas de Pago</h3>
+              <h3 className="text-base sm:text-lg font-bold text-slate-800">Alertas de Pago</h3>
               <p className="text-sm text-slate-600 mt-1">
                 {totalBadge > 0
                   ? `${totalBadge} reserva${totalBadge === 1 ? "" : "s"} con pago pendiente`
@@ -115,12 +115,12 @@ export function NotificationBell() {
         <div className="max-h-[65vh] md:max-h-[70vh] pr-1 overflow-y-auto">
           <div className="p-3 space-y-4">
             {totalBadge === 0 && (
-              <div className="flex items-center gap-4 p-6 rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-sm">
+              <div className="flex items-center gap-4 p-6 rounded-2xl border-2 border-emerald-200 bg-emerald-50 shadow-sm">
                 <div className="p-2 bg-emerald-100 rounded-xl">
                   <CheckCircle2 className="h-6 w-6 text-emerald-600" />
                 </div>
                 <div className="text-sm text-emerald-800">
-                  <p className="font-medium">¡Excelente!</p>
+                  <p className="font-medium">Excelente</p>
                   <p>No hay reservas con pagos pendientes en los próximos 30 días.</p>
                 </div>
               </div>
@@ -128,10 +128,10 @@ export function NotificationBell() {
 
             {red.length > 0 && (
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 bg-red-50 rounded-xl">
-                  <span className="inline-flex h-3 w-3 rounded-full bg-red-500 shadow-lg" />
+                <div className="flex items-center gap-3 p-2 bg-red-50 rounded-xl border-l-4 border-red-300">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
                   <span className="text-sm font-bold text-red-800">
-                    🚨 Críticas (≤ 7 días o vencidas) — {red.length}
+                    Críticas (≤ 7 días o vencidas) — {red.length}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -159,7 +159,7 @@ export function NotificationBell() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className="cursor-pointer rounded-xl border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-3 hover:shadow-lg hover:border-red-300 active:scale-[0.98] transition-all duration-200 shadow-sm"
+                      className="cursor-pointer rounded-xl border-2 border-red-200 bg-red-50 p-3 hover:shadow-lg hover:border-red-300 active:scale-[0.98] transition-all duration-200 shadow-sm"
                     >
                       <div className="flex items-start justify-between">
                         <div className="min-w-0 flex-1">
@@ -186,7 +186,7 @@ export function NotificationBell() {
                               : "El cliente no terminó de pagar"}
                           </div>
                           <div className="mt-1 text-xs text-red-700/80 flex items-center gap-2">
-                            <span>📅 {formatDaysText(n.daysUntil)}</span>
+                            <span>{formatDaysText(n.daysUntil)}</span>
                             <span>• {n.fecha}</span>
                           </div>
                         </div>
@@ -204,10 +204,10 @@ export function NotificationBell() {
 
             {yellow.length > 0 && (
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 bg-amber-50 rounded-xl">
-                  <span className="inline-flex h-3 w-3 rounded-full bg-amber-400 shadow-lg" />
+                <div className="flex items-center gap-3 p-2 bg-amber-50 rounded-xl border-l-4 border-amber-300">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
                   <span className="text-sm font-bold text-amber-800">
-                    ⚠️ Próximas (8–30 días) — {yellow.length}
+                    Próximas (8–30 días) — {yellow.length}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -235,7 +235,7 @@ export function NotificationBell() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className="cursor-pointer rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-3 hover:shadow-lg hover:border-amber-300 active:scale-[0.98] transition-all duration-200 shadow-sm"
+                      className="cursor-pointer rounded-xl border-2 border-amber-200 bg-amber-50 p-3 hover:shadow-lg hover:border-amber-300 active:scale-[0.98] transition-all duration-200 shadow-sm"
                     >
                       <div className="flex items-start justify-between">
                         <div className="min-w-0 flex-1">
@@ -256,7 +256,7 @@ export function NotificationBell() {
                             El cliente no terminó de pagar
                           </div>
                           <div className="mt-1 text-xs text-amber-700/80 flex items-center gap-2">
-                            <span>📅 {formatDaysText(n.daysUntil)}</span>
+                            <span>{formatDaysText(n.daysUntil)}</span>
                             <span>• {n.fecha}</span>
                           </div>
                         </div>
